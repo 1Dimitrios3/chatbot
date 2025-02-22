@@ -51,5 +51,5 @@ pnpm i
 pnpm dev
 
 
-* To view embedding run 
+* To view embeddings run 
 streamlit run your_script.py
