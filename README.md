@@ -47,9 +47,10 @@ run uvicorn main:app --reload
 cd tanstack_fe
 
 run 
-pnpm i
+
+pnpm i / 
 pnpm dev
 
 
 * To view embeddings run 
-streamlit run your_script.py
+streamlit run view_embeddings.py
