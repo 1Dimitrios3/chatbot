@@ -42,9 +42,9 @@ Run the FastAPI server using Uvicorn:
 
 -> uvicorn main:app --reload
 
-# You can also run the server and scripts using Docker.
+## Alternatively run the server and scripts using Docker.
 
-Start the Backend Server with Docker:
+Start the Server with Docker:
 
 -> docker build -f Dockerfile.runServer -t chatbot_be .
 
