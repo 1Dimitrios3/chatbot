@@ -17,15 +17,6 @@ def add_document(id, text):
         metadatas=[{"text": text}]
     )
 
-def chunk_text(text, chunk_size=500, overlap=100):
-    """Split text into overlapping chunks for better context retention."""
-    words = text.split()
-    chunks = [
-        " ".join(words[i:i + chunk_size])
-        for i in range(0, len(words), chunk_size - overlap)
-    ]
-    return chunks
-
 def chunk_text(text, chunk_size=500, overlap=50):
     """Split text into overlapping chunks without breaking sentences."""
     # non library approach

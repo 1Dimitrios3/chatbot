@@ -6,6 +6,8 @@ import Markdown from "react-markdown";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { streamChat } from '~/utils/streamChat';
+import SelectList from '~/components/ui/selectList';
+import { modelOptions } from '~/config';
 
 type Message = {
   role: "user" | "assistant" | "tool" | "system";
@@ -25,6 +27,7 @@ function AIChat() {
     const [conversations, setConversations] = useState<ConversationCard[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [selectModel, setSelectModel] = useState('')
 
     const sessionId = useSession();
 
@@ -48,6 +51,7 @@ function AIChat() {
         await streamChat({
           sessionId: sessionId || '',
           message: userMessage,
+          selectModel: selectModel || "gpt-4o-mini",
           onChunk: (partialResponse: string) => {
             setConversations((prev) => {
               const updated = [...prev];
@@ -69,6 +73,14 @@ function AIChat() {
 
   return (
     <div className="flex flex-col min-h-screen">
+       <div className="w-full p-4 flex justify-end">
+       <SelectList 
+          options={modelOptions} 
+          selectedValue={selectModel} 
+          onChange={setSelectModel} 
+          placeholder="Select a model..." 
+          />
+      </div>
       <div className="flex-1 p-4 container mx-auto max-w-4xl space-y-4 pb-32">
       {conversations.map((card, index) => (
           <div key={index} className="space-y-2">

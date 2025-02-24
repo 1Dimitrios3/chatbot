@@ -33,11 +33,13 @@ chat_histories = {}
 class ChatRequest(BaseModel):
     message: str
     session_id: str
+    model: str
 
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     query = request.message
     session_id = request.session_id
+    selectedModel = request.model
 
     if session_id not in chat_histories:
         chat_histories[session_id] = []
@@ -82,7 +84,7 @@ async def chat_endpoint(request: ChatRequest):
     messages.append({"role": "user", "content": user_message})
 
     response = openai.chat.completions.create(
-        model="gpt-4o-mini",
+        model=selectedModel if selectedModel else "gpt-4o-mini",
         messages=messages,
         temperature=0.2,
         stream=True
