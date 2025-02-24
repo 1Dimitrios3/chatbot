@@ -8,3 +8,4 @@ PyMuPDF
 nltk
 streamlit
 requests
+python-multipart
