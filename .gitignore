@@ -7,3 +7,6 @@ venv/
 # Tanstack
 node_modules/
 dist/
+
+# Chroma Storage
+/chroma_storage/

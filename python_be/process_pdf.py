@@ -146,10 +146,10 @@ def process_all_pdfs():
 
 # Run the function on your PDF
 if __name__ == "__main__":
-    # list_all_embeddings()
+    list_all_embeddings()
     # clear_all_embeddings(reset=True)
     # clear_pdf_embeddings("pdfs/hideAndSeek.pdf")
-    process_all_pdfs()
+    # process_all_pdfs()
     # chunk_text("Adjust your report depending on the KPI’s scope by clicking on the se^ngs icon(gear) on the upper right side of your screen. All KPI’s are broken down into two'major categories (Messages and Users) depending on what their data are referring to. To adjust your report according to the KPI’s scope, click on these^ngs icon (gear), select from the “View” dropdown menu your preferable op?on (Messages or User) & click on Apply. This ac?on will hide all the unrelated KPI columns.")
 
     # Example query

@@ -1,0 +1,23 @@
+############# Example docker file to run the process script #########################3
+
+# Use the official Python image (version 3.10 as an example)
+FROM python:3.10-slim
+
+# Install required build tools for compiling packages like PyMuPDF
+# needed for mac. On linux ubuntu it runs fine without this command
+RUN apt-get update && apt-get install -y build-essential
+
+# Create a working directory in the container
+WORKDIR /app
+
+# Copy your requirements file into the container
+COPY dependencies.txt /app/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r dependencies.txt
+
+# Copy the rest of your project files into the container
+COPY . /app/
+
+# The default command to run your script
+CMD ["python", "process_pdf.py"]
