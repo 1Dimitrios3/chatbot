@@ -33,39 +33,29 @@ To configure where embeddings are stored and to provide your OpenAI API key, set
    cd <repository-directory>
 
 2. All required Python dependencies are listed in dependencies.txt. Install them using:
-
--> pip/python install -r dependencies.txt
+   ```bash
+   pip/python install -r dependencies.txt
 
 3. Start the Backend Server locally
+     ```bash
+     uvicorn main:app --reload
 
-Run the FastAPI server using Uvicorn:
-
--> uvicorn main:app --reload
-
-## Alternatively run the server and scripts using Docker.
-
-Start the Server with Docker:
-
--> docker build -f Dockerfile.runServer -t chatbot_be .
-
--> docker run -p 8000:8000 chatbot_be
-
-Run Processing Scripts with Docker:
-
--> docker build -f Dockerfile.runScripts -t pdf_processor .
-
--> docker run --rm pdf_processor
+4. You may also run the server and scripts using Docker.
+      ```bash
+      docker build -f Dockerfile.runServer -t chatbot_be .
+      docker run -p 8000:8000 chatbot_be
+      
+      docker build -f Dockerfile.runScripts -t pdf_processor .
+      docker run --rm pdf_processor
 
 ## Frontend Setup
 
-cd tanstack_fe
-
-run 
-
-pnpm i 
-
-pnpm dev
+1. cd tanstack_fe
+   ```bash
+      pnpm i 
+      pnpm dev
 
 
-* To view embeddings run 
--> streamlit run view_embeddings.py
+* To view embeddings run
+ ```bash
+   streamlit run view_embeddings.py
