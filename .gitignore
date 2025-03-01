@@ -10,3 +10,4 @@ dist/
 
 # Chroma Storage
 /chroma_storage/
+/chroma_db/
