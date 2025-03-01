@@ -27,7 +27,7 @@ function AIChat() {
     const [conversations, setConversations] = useState<ConversationCard[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [selectModel, setSelectModel] = useState('')
+    const [selectModel, setSelectModel] = useState("gpt-4o-mini")
 
     const sessionId = useSession();
 
@@ -51,7 +51,7 @@ function AIChat() {
         await streamChat({
           sessionId: sessionId || '',
           message: userMessage,
-          selectModel: selectModel || "gpt-4o-mini",
+          selectModel: selectModel,
           onChunk: (partialResponse: string) => {
             setConversations((prev) => {
               const updated = [...prev];
