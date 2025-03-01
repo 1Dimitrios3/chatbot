@@ -20,7 +20,6 @@ export const Route = createFileRoute('/train')({
 function TrainModelComponent() {
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState<string[]>([]);
-    console.log('messages', messages)
     const [status, setStatus] = useState('');
 
     useEffect(() => {

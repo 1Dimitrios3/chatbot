@@ -11,19 +11,13 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as UploadImport } from './routes/upload'
 import { Route as TrainImport } from './routes/train'
 import { Route as EnterKeyImport } from './routes/enterKey'
 import { Route as ChatImport } from './routes/chat'
 import { Route as IndexImport } from './routes/index'
+import { Route as PdfUploadImport } from './routes/pdf/upload'
 
 // Create/Update Routes
-
-const UploadRoute = UploadImport.update({
-  id: '/upload',
-  path: '/upload',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const TrainRoute = TrainImport.update({
   id: '/train',
@@ -46,6 +40,12 @@ const ChatRoute = ChatImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PdfUploadRoute = PdfUploadImport.update({
+  id: '/pdf/upload',
+  path: '/pdf/upload',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -81,11 +81,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrainImport
       parentRoute: typeof rootRoute
     }
-    '/upload': {
-      id: '/upload'
-      path: '/upload'
-      fullPath: '/upload'
-      preLoaderRoute: typeof UploadImport
+    '/pdf/upload': {
+      id: '/pdf/upload'
+      path: '/pdf/upload'
+      fullPath: '/pdf/upload'
+      preLoaderRoute: typeof PdfUploadImport
       parentRoute: typeof rootRoute
     }
   }
@@ -98,7 +98,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/enterKey': typeof EnterKeyRoute
   '/train': typeof TrainRoute
-  '/upload': typeof UploadRoute
+  '/pdf/upload': typeof PdfUploadRoute
 }
 
 export interface FileRoutesByTo {
@@ -106,7 +106,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/enterKey': typeof EnterKeyRoute
   '/train': typeof TrainRoute
-  '/upload': typeof UploadRoute
+  '/pdf/upload': typeof PdfUploadRoute
 }
 
 export interface FileRoutesById {
@@ -115,15 +115,15 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/enterKey': typeof EnterKeyRoute
   '/train': typeof TrainRoute
-  '/upload': typeof UploadRoute
+  '/pdf/upload': typeof PdfUploadRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/enterKey' | '/train' | '/upload'
+  fullPaths: '/' | '/chat' | '/enterKey' | '/train' | '/pdf/upload'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/enterKey' | '/train' | '/upload'
-  id: '__root__' | '/' | '/chat' | '/enterKey' | '/train' | '/upload'
+  to: '/' | '/chat' | '/enterKey' | '/train' | '/pdf/upload'
+  id: '__root__' | '/' | '/chat' | '/enterKey' | '/train' | '/pdf/upload'
   fileRoutesById: FileRoutesById
 }
 
@@ -132,7 +132,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   EnterKeyRoute: typeof EnterKeyRoute
   TrainRoute: typeof TrainRoute
-  UploadRoute: typeof UploadRoute
+  PdfUploadRoute: typeof PdfUploadRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -140,7 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   EnterKeyRoute: EnterKeyRoute,
   TrainRoute: TrainRoute,
-  UploadRoute: UploadRoute,
+  PdfUploadRoute: PdfUploadRoute,
 }
 
 export const routeTree = rootRoute
@@ -157,7 +157,7 @@ export const routeTree = rootRoute
         "/chat",
         "/enterKey",
         "/train",
-        "/upload"
+        "/pdf/upload"
       ]
     },
     "/": {
@@ -172,8 +172,8 @@ export const routeTree = rootRoute
     "/train": {
       "filePath": "train.tsx"
     },
-    "/upload": {
-      "filePath": "upload.tsx"
+    "/pdf/upload": {
+      "filePath": "pdf/upload.tsx"
     }
   }
 }

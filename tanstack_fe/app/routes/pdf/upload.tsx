@@ -1,10 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/start';
-import { useState, useRef } from 'react';
-import { Button } from "../components/ui/button";
+import { useState, useRef, useMemo } from 'react';
+import { Button } from "../../components/ui/button";
 import { FileText } from "lucide-react"
+import { PdfList } from '~/components/ui/PdfList';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const Route = createFileRoute('/upload')({
+export const Route = createFileRoute('/pdf/upload')({
   component: UploadComponent,
 })
 
@@ -16,13 +18,14 @@ const uploadFile = createServerFn({ method: 'POST' })
     return formData;
   })
   .handler(async ({ data }) => {
-    const response = await fetch("http://localhost:8000/api/upload", {
+    const response = await fetch("http://localhost:8000/api/pdf/upload", {
       method: "POST",
       body: data,
     });
 
     if (!response.ok) {
-      throw new Error('Failed to upload file');
+      const errorResponse = await response.json();
+      throw new Error(errorResponse.detail || 'Failed to upload file');
     }
 
     const result = await response.json();
@@ -34,11 +37,13 @@ function UploadComponent() {
     const [uploading, setUploading] = useState(false);
     const [uploaded, setUploaded] = useState(false);
     const [message, setMessage] = useState("");
+    const queryClient = useQueryClient();
+
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
-    
+
         setUploading(true);
         setMessage("");
     
@@ -48,9 +53,10 @@ function UploadComponent() {
         try {
           const data = await uploadFile({ data: formData });
           setMessage(data.message || "Upload successful!");
+          queryClient.invalidateQueries({ queryKey: ["pdfs"] });
           setUploaded(true);
-        } catch (error) {
-          setMessage("Upload failed. Please try again.");
+        } catch (error: any) {
+          setMessage(error.message || "Upload failed. Please try again.");
         } finally {
           setUploading(false);
           event.target.value = "";
@@ -63,7 +69,7 @@ function UploadComponent() {
             Upload your dataset
             </h3>
             <h5 className="text-center text-sm font-italic">
-            Must be a .pdf file
+            Must be a .pdf file. Max allowed files: 5
             </h5>
             <div className="flex flex-col items-center justify-center space-y-4">
             {uploaded && (
@@ -88,6 +94,7 @@ function UploadComponent() {
 
         {message && <p className="text-sm text-gray-600">{message}</p>}
         </div>
+        <PdfList />
       </div>
       )
 }

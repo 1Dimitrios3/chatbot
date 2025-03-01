@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Body
+from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect, Body, Query
 from fastapi.middleware.cors import CORSMiddleware
 import asyncio
 from pydantic import BaseModel
@@ -6,8 +6,9 @@ import openai
 import os
 from process_pdf import search_docs, process_all_pdfs
 from dotenv import load_dotenv
-from helpers.helpers import openai_stream_generator
+from helpers.helpers import openai_stream_generator, clear_pdf_embeddings
 from fastapi.responses import StreamingResponse
+from typing import List
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -19,7 +20,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "DELETE"],
     allow_headers=["Content-Type", "Authorization"],
 )
 
@@ -100,13 +101,24 @@ async def chat_endpoint(request: ChatRequest):
         media_type="text/plain"
     )
 
-@app.post("/api/upload")
+@app.post("/api/pdf/upload")
 async def upload_pdf(file: UploadFile = File(...)):
     """
     Handles PDF uploads and stores them in the /pdfs folder.
     """
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed.")
+    
+    # Check how many PDFs are already in the folder
+    try:
+        files = os.listdir(UPLOAD_FOLDER)
+        pdf_files = [f for f in files if f.endswith(".pdf")]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if len(pdf_files) >= 5:
+        raise HTTPException(status_code=400, detail="Maximum of 5 PDFs allowed.")
+
 
     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
 
@@ -116,6 +128,47 @@ async def upload_pdf(file: UploadFile = File(...)):
 
     return {"message": "File uploaded successfully!", "filename": file.filename}
 
+@app.get("/api/pdf/list", response_model=List[str])
+async def list_pdfs():
+    """
+    Lists all PDFs available in the upload folder.
+    """
+    try:
+        files = os.listdir(UPLOAD_FOLDER)
+        # Filter for files ending with .pdf
+        pdf_files = [f for f in files if f.endswith(".pdf")]
+        return pdf_files
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/pdf/delete")
+async def delete_pdf(filename: str = Query(..., description="Name of the PDF file to delete")):
+    """
+    Deletes a PDF file by name from the upload folder.
+    """
+    # Use os.path.basename to prevent directory traversal attacks
+    safe_filename = os.path.basename(filename)
+    if not safe_filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Invalid file name provided. Must be a .pdf file.")
+    
+    file_path = os.path.join(UPLOAD_FOLDER, safe_filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found.")
+    
+    # Clear embeddings associated with the PDF.
+    try:
+        clear_pdf_embeddings(file_path)
+    except Exception as e:
+        # Log the error. Optionally, you can raise an HTTPException if failing to clear embeddings should block deletion.
+        print(f"Error clearing embeddings for {file_path}: {e}")
+    
+    # Delete the PDF file from storage.
+    try:
+        os.remove(file_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    return {"message": "File deleted successfully!", "filename": safe_filename}
 
 # Global variables to track training status and WebSocket clients
 TRAINING_STATUS = {"status": "idle", "message": ""}
