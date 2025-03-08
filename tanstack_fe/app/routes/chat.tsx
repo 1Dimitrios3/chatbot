@@ -7,7 +7,10 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { streamChat } from '~/utils/streamChat';
 import SelectList from '~/components/ui/selectList';
-import { modelOptions } from '~/config';
+import { fileTypeOptions, modelOptions } from '~/config';
+import ToggleGroupBase from '~/components/ui/toggleGroup';
+import { FileType } from '~/types';
+import React from 'react';
 
 type Message = {
   role: "user" | "assistant" | "tool" | "system";
@@ -28,8 +31,17 @@ function AIChat() {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [selectModel, setSelectModel] = useState("gpt-4o-mini")
+    const [selectFileType, setSelectFileType] = useState<FileType>("pdf");
 
     const sessionId = useSession();
+
+    const chatContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+    React.useEffect(() => {
+        if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+    }, [conversations]);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -52,6 +64,7 @@ function AIChat() {
           sessionId: sessionId || '',
           message: userMessage,
           selectModel: selectModel,
+          selectedFileType: selectFileType,
           onChunk: (partialResponse: string) => {
             setConversations((prev) => {
               const updated = [...prev];
@@ -73,15 +86,26 @@ function AIChat() {
 
   return (
     <div className="flex flex-col min-h-screen">
-       <div className="w-full p-4 flex justify-end">
-       <SelectList 
+      <div className="w-full p-4 flex items-center justify-between">
+        <div className="flex-1 flex justify-center">
+          <ToggleGroupBase 
+            items={fileTypeOptions} 
+            value={selectFileType}
+            onValueChange={(value) => setSelectFileType(value)}
+          />
+        </div>
+        <SelectList 
           options={modelOptions} 
           selectedValue={selectModel} 
           onChange={setSelectModel} 
           placeholder="Select a model..." 
-          />
+        />
       </div>
-      <div className="flex-1 p-4 container mx-auto max-w-4xl space-y-4 pb-32">
+      <div 
+        ref={chatContainerRef} 
+        className="flex-1 p-4 container mx-auto max-w-4xl space-y-4 pb-32 overflow-y-auto"
+        style={{ maxHeight: "calc(100vh - 150px)" }}
+        >
       {conversations.map((card, index) => (
           <div key={index} className="space-y-2">
             <AIMessage message={card.user} />

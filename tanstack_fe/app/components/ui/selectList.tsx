@@ -2,7 +2,6 @@ import * as React from "react";
 import { Select } from "radix-ui";
 import { SelectItem } from "./selectItem";
 import { ChevronDownIcon, ChevronUpIcon } from "@radix-ui/react-icons";
-import { SetStateAction } from "react";
 
 interface Option {
   label: string;
@@ -15,6 +14,7 @@ interface SelectListProps {
   selectedValue: string;
   onChange: ((value: string) => void) | undefined;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export const SelectList: React.FC<SelectListProps> = ({
@@ -22,9 +22,10 @@ export const SelectList: React.FC<SelectListProps> = ({
   selectedValue,
   onChange,
   placeholder = "Select an option",
+  disabled
 }) => {
   return (
-    <Select.Root value={selectedValue} onValueChange={onChange}>
+    <Select.Root value={selectedValue} disabled={disabled} onValueChange={onChange}>
       <Select.Trigger
         className="
           inline-flex 

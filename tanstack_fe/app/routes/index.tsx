@@ -10,10 +10,13 @@ function Home() {
   return (
     <div className="flex flex-col items-center justify-center h-screen space-y-6">
     <h3 className="text-center text-2xl font-semibold">
-      Hello! <br /> Ask me anything you want to know about Grow Suite.
+      Hello there...
     </h3>
-    <Link to="/chat">
-        <Button variant="default" size="lg">Go to Chat</Button>
+    <h4> 
+      Upload and analyze a <i>PDF</i> or <i>CSV</i> file and start a chat.
+    </h4>
+    <Link to="/pdf/upload">
+        <Button variant="default" size="lg">Upload a file</Button>
       </Link>
   </div>
   )

@@ -9,3 +9,7 @@ nltk
 streamlit
 requests
 python-multipart
+faiss-cpu
+numpy
+matplotlib
+pandas

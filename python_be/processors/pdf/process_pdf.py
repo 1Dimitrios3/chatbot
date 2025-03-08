@@ -1,12 +1,12 @@
 import fitz  # PyMuPDF
 import os
-from helpers.helpers import *
+from helpers.pdf.helpers import *
+from schemas.variables import *
 import nltk
 nltk.download('punkt_tab')
 from nltk.tokenize import sent_tokenize
 
-# os.environ["TOKENIZERS_PARALLELISM"] = "false"
-PDF_DIRECTORY = "pdfs"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def add_document(id, text):
     """Store document embeddings in ChromaDB."""
@@ -51,18 +51,19 @@ def chunk_text(text, chunk_size=500, overlap=50):
 
 
 def process_pdf(pdf_path):
-    print(f"Starting processing for: {pdf_path}")
+    filename = os.path.basename(pdf_path)
+    print(f"Starting processing for: {filename}")
     """Extract text from a PDF, chunk it, and store embeddings only if necessary."""
     pdf_hash = get_pdf_hash(pdf_path)
     print(f"[DEBUG] Computed PDF hash: {pdf_hash}")
     metadata = get_pdf_metadata(pdf_path)
 
     if metadata and metadata.get("pdf_hash") == pdf_hash:
-        message = f"✅ Skipping {pdf_path}: Already processed."
+        message = f"✅ Skipping {filename}: Already processed."
         print(message)
         return {"status": "skipped", "message": message}  # Return message to API
 
-    print(f"🔄 Processing {pdf_path}...")
+    print(f"🔄 Processing {filename}...")
 
   # Open PDF using a context manager
     try:
@@ -75,7 +76,7 @@ def process_pdf(pdf_path):
                 print(f"[DEBUG] Extracted text from page {i + 1}/{num_pages}.")
                 full_text += page_text + "\n"
     except Exception as e:
-        error_message = f"[ERROR] Failed to open or read PDF {pdf_path}: {e}"
+        error_message = f"[ERROR] Failed to open or read PDF {filename}: {e}"
         print(error_message)
         return {"status": "error", "message": error_message}
 
@@ -112,7 +113,7 @@ def process_pdf(pdf_path):
     try:
         mark_pdf_as_processed(pdf_path, num_chunks, pdf_hash)
         print("[DEBUG] Marked PDF as processed.")
-        return {"status": "processed", "message": f"PDF {pdf_path} successfully processed!"}
+        return {"status": "processed", "message": f"PDF {filename} successfully processed!"}
     except Exception as e:
         print(f"[ERROR] Error marking PDF as processed: {e}")
         return {"status": "error", "message": error_message}
