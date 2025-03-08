@@ -29,6 +29,7 @@ To configure where embeddings are stored and to provide your OpenAI API key, set
 2. Alternatively, you can input your OpenAI API key via the /enterKey route on the app.
 
 3. The project uses ChromaDB for managing document embeddings. Ensure that the CHROMA_STORAGE_PATH environment variable is set correctly to avoid stale storage issues.
+4. In case you encounter an issue with stale cache where the chat is not responding properly about pdf files try updating the CHROMA_STORAGE_PATH env key.
 
 ## Backend Setup
 
