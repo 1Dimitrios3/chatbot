@@ -4,10 +4,10 @@ __pycache__/
 venv/
 *.env
 
+# Chroma Storage
+chroma_storage/
+chroma_db/
+
 # Tanstack
 node_modules/
 dist/
-
-# Chroma Storage
-/chroma_storage/
-/chroma_db/

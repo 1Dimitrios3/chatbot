@@ -16,6 +16,7 @@ import { Route as EnterKeyImport } from './routes/enterKey'
 import { Route as ChatImport } from './routes/chat'
 import { Route as IndexImport } from './routes/index'
 import { Route as PdfUploadImport } from './routes/pdf/upload'
+import { Route as CsvUploadImport } from './routes/csv/upload'
 
 // Create/Update Routes
 
@@ -46,6 +47,12 @@ const IndexRoute = IndexImport.update({
 const PdfUploadRoute = PdfUploadImport.update({
   id: '/pdf/upload',
   path: '/pdf/upload',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CsvUploadRoute = CsvUploadImport.update({
+  id: '/csv/upload',
+  path: '/csv/upload',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -81,6 +88,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrainImport
       parentRoute: typeof rootRoute
     }
+    '/csv/upload': {
+      id: '/csv/upload'
+      path: '/csv/upload'
+      fullPath: '/csv/upload'
+      preLoaderRoute: typeof CsvUploadImport
+      parentRoute: typeof rootRoute
+    }
     '/pdf/upload': {
       id: '/pdf/upload'
       path: '/pdf/upload'
@@ -98,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/enterKey': typeof EnterKeyRoute
   '/train': typeof TrainRoute
+  '/csv/upload': typeof CsvUploadRoute
   '/pdf/upload': typeof PdfUploadRoute
 }
 
@@ -106,6 +121,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/enterKey': typeof EnterKeyRoute
   '/train': typeof TrainRoute
+  '/csv/upload': typeof CsvUploadRoute
   '/pdf/upload': typeof PdfUploadRoute
 }
 
@@ -115,15 +131,29 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/enterKey': typeof EnterKeyRoute
   '/train': typeof TrainRoute
+  '/csv/upload': typeof CsvUploadRoute
   '/pdf/upload': typeof PdfUploadRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/enterKey' | '/train' | '/pdf/upload'
+  fullPaths:
+    | '/'
+    | '/chat'
+    | '/enterKey'
+    | '/train'
+    | '/csv/upload'
+    | '/pdf/upload'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/enterKey' | '/train' | '/pdf/upload'
-  id: '__root__' | '/' | '/chat' | '/enterKey' | '/train' | '/pdf/upload'
+  to: '/' | '/chat' | '/enterKey' | '/train' | '/csv/upload' | '/pdf/upload'
+  id:
+    | '__root__'
+    | '/'
+    | '/chat'
+    | '/enterKey'
+    | '/train'
+    | '/csv/upload'
+    | '/pdf/upload'
   fileRoutesById: FileRoutesById
 }
 
@@ -132,6 +162,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   EnterKeyRoute: typeof EnterKeyRoute
   TrainRoute: typeof TrainRoute
+  CsvUploadRoute: typeof CsvUploadRoute
   PdfUploadRoute: typeof PdfUploadRoute
 }
 
@@ -140,6 +171,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   EnterKeyRoute: EnterKeyRoute,
   TrainRoute: TrainRoute,
+  CsvUploadRoute: CsvUploadRoute,
   PdfUploadRoute: PdfUploadRoute,
 }
 
@@ -157,6 +189,7 @@ export const routeTree = rootRoute
         "/chat",
         "/enterKey",
         "/train",
+        "/csv/upload",
         "/pdf/upload"
       ]
     },
@@ -171,6 +204,9 @@ export const routeTree = rootRoute
     },
     "/train": {
       "filePath": "train.tsx"
+    },
+    "/csv/upload": {
+      "filePath": "csv/upload.tsx"
     },
     "/pdf/upload": {
       "filePath": "pdf/upload.tsx"

@@ -1,10 +1,15 @@
 # RAG Chatbot
 ## Integration with OpenAI
 
-This repository contains the code for a Retrieval-Augmented Generation (RAG) Chatbot that integrates with OpenAI. This application provides the ability to:
-- **Upload PDF files:** Process and store PDF documents.
-- **Train a model:** Generate document embeddings from the PDFs.
-- **Chat with the model:** Query the trained model to receive contextually relevant responses based on the uploaded documents.
+This repository contains the code for a Retrieval-Augmented Generation (RAG) Chatbot that integrates with OpenAI. The application allows users to interact with AI using both PDF and CSV data for contextual, data-driven conversations.
+
+## Key Features:
+- **Upload PDF & CSV files:** Process and store PDF documents and structured CSV datasets.
+- **Train a model:** Generate document embeddings from PDFs and vectorize CSV data for retrieval.
+- **Chat with the model:** Query the trained model to receive contextually relevant responses based on the uploaded PDFs and CSV records.
+- **Retrieval-Augmented Generation (RAG):** Enhances responses by fetching relevant information from uploaded documents and datasets before generating answers.
+- **Streaming Responses:** Provides real-time, incremental responses from OpenAI, ensuring a faster and interactive user experience.
+- **Tool Calls for CSV Analysis:** Enables advanced data querying on CSV files, including summarization, column comparisons, and statistical insights.
 
 The project is split into two parts:
 - A **FastAPI-based backend** that handles PDF processing, training, and chat interactions.

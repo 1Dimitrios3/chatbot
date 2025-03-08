@@ -1,14 +1,16 @@
+import { FileType } from "~/types";
 import { streamAsyncIterator } from "./asyncIterator";
 
 interface StreamChatParams {
   sessionId: string;
   message: string;
   selectModel: string;
+  selectedFileType: FileType;
   onChunk: (chunk: string) => void;
 }
 
-async function streamChat({ sessionId, message, selectModel, onChunk }: StreamChatParams) {
-  const response = await fetch("http://localhost:8000/api/chat", {
+async function streamChat({ sessionId, message, selectModel, selectedFileType, onChunk }: StreamChatParams) {
+    const response = await fetch(`http://localhost:8000/api/${selectedFileType}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ session_id: sessionId, message, model: selectModel }),

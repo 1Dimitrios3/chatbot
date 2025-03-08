@@ -20,4 +20,4 @@ RUN pip install --no-cache-dir -r dependencies.txt
 COPY . /app/
 
 # The default command to run your script
-CMD ["python", "process_pdf.py"]
+CMD ["python", "processors/pdf/process_pdf.py"]

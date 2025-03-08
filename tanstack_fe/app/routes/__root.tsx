@@ -5,7 +5,7 @@ import {
   createRootRoute,
   HeadContent,
   Scripts,
-  Link,
+  Link
 } from '@tanstack/react-router'
 import appCss from "../styles/app.css?url"
 import { DefaultCatchBoundary } from '~/components/ui/DefaultCatchBoundary'
@@ -51,6 +51,7 @@ function RootComponent() {
 }
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
+  const searchParams = Route.useSearch();
   return (
     <html>
       <head>
@@ -68,19 +69,33 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
           >
             Home
           </Link>{' '}
-          <Link
-            to="/pdf/upload"
-            activeProps={{
-              className: 'font-bold',
-            }}
-          >
-            Upload
-          </Link>{' '}
+          <div className="relative group">
+            <span className="cursor-pointer text-white">Upload</span>
+            <div className="absolute left-0 hidden group-hover:block bg-zinc-800 p-2 rounded shadow-lg">
+              <Link
+                to="/pdf/upload"
+                className="block px-2 py-1 hover:bg-zinc-700"
+                activeProps={{ className: 'font-medium' }}
+                search={searchParams}
+              >
+                PDF
+              </Link>
+              <Link
+                to="/csv/upload"
+                className="block px-2 py-1 hover:bg-zinc-700"
+                activeProps={{ className: 'font-medium' }}
+                search={searchParams}
+              >
+                CSV
+              </Link>
+            </div>
+          </div>
           <Link
             to="/train"
             activeProps={{
               className: 'font-bold',
             }}
+            search={searchParams}
           >
             Train
           </Link>{' '}

@@ -1,7 +1,7 @@
 import os
 import streamlit as st
 import json
-from helpers.helpers import initialize_chroma_client
+from helpers.pdf.helpers import initialize_chroma_client
 
 # Set storage path, configurable via environment variable
 STORAGE_PATH = os.getenv("CHROMA_STORAGE_PATH", "./chroma_storage")

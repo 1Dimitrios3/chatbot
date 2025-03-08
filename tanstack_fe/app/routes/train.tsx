@@ -1,43 +1,54 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { createServerFn } from '@tanstack/start';
+import { createFileRoute, useSearch } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Button } from "../components/ui/button";
 import { Loader2, Cog } from 'lucide-react';
+import SelectList from '~/components/ui/selectList';
+import { z } from 'zod';
+import { fileTypeOptions } from '~/config';
+
+const searchSchema = z.object({
+  fileType: z.string().optional()
+});
 
 export const Route = createFileRoute('/train')({
-  // component: TrainModelComponent,
-  component: () => {
-    // add auth check
-    // if (localStorage.getItem('train') !== 'true') {
-      if (false) {
-      return null;
-    }
-
-    return <TrainModelComponent />
-  }
+  component: TrainModelComponent,
+  validateSearch: searchSchema
 })
 
 function TrainModelComponent() {
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState<string[]>([]);
     const [status, setStatus] = useState('');
+    const searchParams = useSearch({ from: '/train' });
 
+    const [fileType, setFileType] = useState(searchParams.fileType ?? "pdf");
+  
     useEffect(() => {
         // Connect to WebSocket
         const socket = new WebSocket("ws://localhost:8000/api/train/ws");
     
+        socket.onopen = () => {
+          console.log("WebSocket connected");
+        };
+        
         socket.onmessage = (event) => {
           const data = JSON.parse(event.data);
+          console.log('data ->', data)
           setStatus(data.message); // Update status from WebSocket
 
-                // If detailed results are available, extract messages
-        if (data.details && data.details.results) {
-            const newMessages = data.details.results.map((res: any) => res.message);
-            setMessages(newMessages);
-        }
+          // If detailed results exist, use the first result for status and map messages
+          if (data.details && data.details.results && data.details.results.length > 0) {
+            setMessages(data.details.results.map((res: any) => res.message));
+          } else if (data.message) {
+            setMessages([data.message]);
+          }
 
-          if (data.status === "completed" || data.status === "error" || data.status === "empty") {
+          if (["completed", "error", "empty", "skipped"].includes(data.status)) {
             setLoading(false);
+          }
+
+          if (["empty", "running"].includes(data.status)) {
+            setMessages([]);
           }
         };
     
@@ -60,16 +71,13 @@ function TrainModelComponent() {
         setMessages([]);
     
         try {
-          const response = await fetch("http://localhost:8000/api/train", {
+          const response = await fetch(`http://localhost:8000/api/train?file_type=${fileType}`, {
             method: "POST",
           });
     
           if (!response.ok) {
             throw new Error("Failed to train model");
           }
-    
-          const result = await response.json();
-          setStatus(result.message);
         } catch (error) {
           setStatus("Error starting training");
           console.error(error);
@@ -77,6 +85,11 @@ function TrainModelComponent() {
         }
       };
     
+      const handleFileTypeChange = (newFileType: string) => {
+        setFileType(newFileType);
+        setMessages([]); 
+        setStatus('')
+      };
 
 
     return (
@@ -85,10 +98,20 @@ function TrainModelComponent() {
             Train the model
             </h3>
             <h5 className="text-center text-sm font-italic">
-            Wait for the process to finish
+            Once started wait for the process to finish
             </h5>
             <div className="flex flex-col items-center justify-center space-y-4">
-   
+            <div className="flex items-center mb-4">
+              <label className="text-gray-300 mr-2">File type:</label>
+              <SelectList
+                options={fileTypeOptions}
+                selectedValue={fileType}
+                disabled={loading}
+                onChange={handleFileTypeChange}
+                placeholder="Select file type"
+              />
+            </div>
+
             <Button
               onClick={startTraining}
               disabled={loading}

@@ -41,6 +41,7 @@ collection = chroma_client.get_or_create_collection(
     name="docs",  
     metadata={
         "hnsw:M": 64,       # Controls number of edges per node (16 - 64)
+        "hnsw:ef_search": 200 
     }
 )
 metadata_collection = chroma_client.get_or_create_collection(name="metadata")
