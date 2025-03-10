@@ -130,6 +130,7 @@ async def ask_question_about_dataset(
     if response.choices[0].message.tool_calls:
         try:
             tool_call = response.choices[0].message.tool_calls[0]
+            print('tool_call ->', tool_call)
             function_name = tool_call.function.name
             arguments_json = tool_call.function.arguments
             arguments = json.loads(arguments_json)
@@ -197,7 +198,7 @@ def process_csv(csv_path):
         print(f"✅ Cleaned DataFrame with {len(clean_df)} rows.")
     
         print("\n🔹 Chunking Data...")
-        json_chunks = chunk_dataframe(clean_df, chunk_size=100)
+        json_chunks = chunk_dataframe(clean_df, chunk_size=300)
         print(f"✅ Created {len(json_chunks)} chunks.")
     
         print("\n🔹 Generating Embeddings and text records...")

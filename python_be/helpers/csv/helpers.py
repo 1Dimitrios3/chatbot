@@ -24,13 +24,29 @@ def get_csv_path() -> str:
             return os.path.join(dataset_dir, file)
     raise FileNotFoundError("No CSV file found in the datasets directory")
 
-def chunk_dataframe(df: pd.DataFrame, chunk_size: int = 100) -> list:
+def chunk_dataframe(df: pd.DataFrame, chunk_size: int = 100, overlap: int = 40) -> list:
     """
-    Splits a cleaned DataFrame into smaller JSON chunks.
+    Splits a cleaned DataFrame into smaller overlapping JSON chunks.
+    
+    Each chunk contains up to `chunk_size` rows, and consecutive chunks overlap by `overlap` rows.
+    
+    Best Practices for Choosing chunk_size:
+    - For small datasets (≤ 10K rows): chunk_size = 100 - 500 is usually fine.
+    - For medium datasets (10K - 1M rows): chunk_size = 500 - 2000 may improve efficiency.
+    - For very large datasets (1M+ rows): chunk_size = 5000+ is better to minimize overhead.
+    
+    The `overlap` value should be less than `chunk_size`.
     """
-    chunks = [df[i:i+chunk_size].to_json(orient="records") for i in range(0, len(df), chunk_size)]
-    for i, _ in enumerate(chunks):
-        print(f"Processing chunk {i+1} of {len(chunks)}")
+    if overlap >= chunk_size:
+        raise ValueError("Overlap must be less than chunk_size.")
+    
+    chunks = []
+    step = chunk_size - overlap  # number of rows to advance for each new chunk
+    for i in range(0, len(df), step):
+        chunk = df.iloc[i:i+chunk_size]
+        chunks.append(chunk.to_json(orient="records"))
+        print(f"Processing chunk {len(chunks)} of approx. {((len(df)-1) // step) + 1}")
+    
     return chunks
 
 def create_embeddings_from_chunks(json_chunks: list) -> (list, list): # type: ignore
