@@ -170,7 +170,7 @@ async def ask_question_about_dataset(
 
 
 
-def process_csv(csv_path):
+def process_csv(csv_path, chunk_size):
     """
     Processes the uploaded CSV file for training by ensuring that the FAISS index and associated text records are ready.
     If the CSV file has already been processed (i.e., the FAISS index and text records exist), it loads them and returns a flat
@@ -198,7 +198,7 @@ def process_csv(csv_path):
         print(f"✅ Cleaned DataFrame with {len(clean_df)} rows.")
     
         print("\n🔹 Chunking Data...")
-        json_chunks = chunk_dataframe(clean_df, chunk_size=300)
+        json_chunks = chunk_dataframe(clean_df, chunk_size, int(chunk_size / 10))
         print(f"✅ Created {len(json_chunks)} chunks.")
     
         print("\n🔹 Generating Embeddings and text records...")
@@ -223,7 +223,7 @@ def process_csv(csv_path):
     message = f"CSV {filename} successfully processed!"
     return {"status": "processed", "message": message}
 
-def process_all_csvs():
+def process_all_csvs(chunk_size):
     """Process all CSV files in a specified directory.
         Currently we process only a single csv.
         We keep this function in case this changes in the future.
@@ -244,7 +244,7 @@ def process_all_csvs():
     results = []
     for filename in csv_files:
         csv_path = os.path.join(CSV_DIRECTORY, filename)
-        result = process_csv(csv_path)
+        result = process_csv(csv_path, chunk_size)
         results.append(result)
   
     return {"status": "completed", "results": results}

@@ -10,4 +10,13 @@ const fileTypeOptions = [
     { label: "CSV", value: "csv" },
   ];
 
-export { modelOptions, fileTypeOptions };
+const chunkSizeOptions = [
+  { label: "Select chunk size", value: "0" },
+  { label: "100 rows", value: "100" },
+  { label: "300 rows", value: "300" },
+  { label: "500 rows", value: "500" },
+  { label: "700 rows", value: "700" },
+  { label: "900 rows", value: "900" }
+]
+
+export { modelOptions, fileTypeOptions, chunkSizeOptions };

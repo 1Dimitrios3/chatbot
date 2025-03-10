@@ -17,7 +17,7 @@ def add_document(id, text):
         metadatas=[{"text": text}]
     )
 
-def chunk_text(text, chunk_size=500, overlap=50):
+def chunk_text(text, chunk_size=200, overlap=20):
     """Split text into overlapping chunks without breaking sentences."""
     # non library approach
     # sentences = re.split(r'(?<=[.!?])\s+', text)
@@ -50,7 +50,7 @@ def chunk_text(text, chunk_size=500, overlap=50):
 
 
 
-def process_pdf(pdf_path):
+def process_pdf(pdf_path, chunk_size):
     filename = os.path.basename(pdf_path)
     print(f"Starting processing for: {filename}")
     """Extract text from a PDF, chunk it, and store embeddings only if necessary."""
@@ -83,7 +83,7 @@ def process_pdf(pdf_path):
     print("[DEBUG] Finished text extraction from PDF.")
 
     print("[DEBUG] Starting chunking process...")
-    chunks = chunk_text(full_text)
+    chunks = chunk_text(full_text, chunk_size, int(chunk_size / 10))
     num_chunks = len(chunks)
     print(f"[DEBUG] Chunking complete: {num_chunks} chunks created.")
 
@@ -120,7 +120,7 @@ def process_pdf(pdf_path):
 
 
 
-def process_all_pdfs():
+def process_all_pdfs(chunk_size):
     """Process all PDFs in a specified directory."""
 
     print(f"Checking for PDFs in directory: {PDF_DIRECTORY}")
@@ -139,7 +139,7 @@ def process_all_pdfs():
     results = []
     for filename in pdf_files:
         pdf_path = os.path.join(PDF_DIRECTORY, filename)
-        result = process_pdf(pdf_path)
+        result = process_pdf(pdf_path, chunk_size)
         results.append(result)
 
     return {"status": "completed", "results": results}

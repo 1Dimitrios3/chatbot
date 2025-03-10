@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 import { Loader2, Cog } from 'lucide-react';
 import SelectList from '~/components/ui/selectList';
 import { z } from 'zod';
-import { fileTypeOptions } from '~/config';
+import { chunkSizeOptions, fileTypeOptions } from '~/config';
 
 const searchSchema = z.object({
   fileType: z.string().optional()
@@ -22,6 +22,7 @@ function TrainModelComponent() {
     const searchParams = useSearch({ from: '/train' });
 
     const [fileType, setFileType] = useState(searchParams.fileType ?? "pdf");
+    const [chunkSize, setChunkSize] = useState('');
   
     useEffect(() => {
         // Connect to WebSocket
@@ -71,7 +72,7 @@ function TrainModelComponent() {
         setMessages([]);
     
         try {
-          const response = await fetch(`http://localhost:8000/api/train?file_type=${fileType}`, {
+          const response = await fetch(`http://localhost:8000/api/train?file_type=${fileType}&chunk_size=${chunkSize}`, {
             method: "POST",
           });
     
@@ -91,6 +92,12 @@ function TrainModelComponent() {
         setStatus('')
       };
 
+      const handleChunkSizeChange = (chunks: string) => {
+        setChunkSize(chunks);
+        setMessages([]); 
+        setStatus('')
+      }
+
 
     return (
         <div className="flex flex-col items-center justify-center h-screen space-y-6">
@@ -100,9 +107,11 @@ function TrainModelComponent() {
             <h5 className="text-center text-sm font-italic">
             Once started wait for the process to finish
             </h5>
-            <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="flex flex-col items-center justify-between">
             <div className="flex items-center mb-4">
-              <label className="text-gray-300 mr-2">File type:</label>
+            <label className="text-gray-300 mr-2">
+              File type <span className="text-red-500">*</span>
+            </label>
               <SelectList
                 options={fileTypeOptions}
                 selectedValue={fileType}
@@ -111,11 +120,21 @@ function TrainModelComponent() {
                 placeholder="Select file type"
               />
             </div>
+            <div className="flex items-center mb-4">
+              <label className="text-gray-300 mr-2">Chunk size:</label>
+              <SelectList
+                options={chunkSizeOptions}
+                selectedValue={chunkSize}
+                disabled={loading}
+                onChange={handleChunkSizeChange}
+                placeholder="Select chunk size"
+              />
+            </div>
 
             <Button
               onClick={startTraining}
               disabled={loading}
-              className="bg-primary hover:bg-primary/90"
+              className="my-5 bg-primary hover:bg-primary/90"
               variant="default"
               size="lg"
             > 

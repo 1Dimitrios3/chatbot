@@ -197,7 +197,7 @@ async def send_status_updates():
         except Exception:
             websocket_clients.discard(ws)  # Remove disconnected clients
 
-async def train_process(file_type: str):
+async def train_process(file_type: str, chunk_size: int = 200):
     """
     Background task that runs the training process for either PDF or CSV files.
     """
@@ -209,10 +209,10 @@ async def train_process(file_type: str):
 
     try:
         if file_type.lower() == "pdf":
-            result = await asyncio.to_thread(process_all_pdfs)  # Should return a dict with keys like "status", "message", etc.
+            result = await asyncio.to_thread(process_all_pdfs, chunk_size)
             print('result', result)
         elif file_type.lower() == "csv":
-            result = await asyncio.to_thread(process_all_csvs)  
+            result = await asyncio.to_thread(process_all_csvs, chunk_size)  
             print('result', result)
         else:
             raise ValueError("Invalid file type provided. Allowed values are 'pdf' or 'csv'.")
@@ -234,16 +234,25 @@ async def train_process(file_type: str):
 @app.post("/api/train")
 async def train_model(
     file_type: str = Query("pdf", description="Type of file to train on: 'pdf' or 'csv'"),
-    background_tasks: BackgroundTasks = None
+    chunk_size: str = Query("200", description="Chunk size for processing (use non-positive value for default)"),
+    background_tasks: BackgroundTasks = None,
 ):
-    """
-    Starts the training process in the background and returns immediately.
-    """
     if TRAINING_STATUS["status"] == "running":
         raise HTTPException(status_code=400, detail="Training is already in progress.")
 
-    background_tasks.add_task(train_process, file_type)
-    return {"message": f"Training process for {file_type.upper()} started in the background!"}
+    try:
+        cs = int(chunk_size)
+    except ValueError:
+        cs = 0  # Use default if conversion fails
+
+    if cs <= 0:
+        background_tasks.add_task(train_process, file_type)
+        msg = f"Training process for {file_type.upper()} with default chunk size started in the background!"
+    else:
+        background_tasks.add_task(train_process, file_type, chunk_size=cs)
+        msg = f"Training process for {file_type.upper()} with chunk size {cs} started in the background!"
+
+    return {"message": msg}
 
 @app.get("/api/train/status")
 async def get_training_status():

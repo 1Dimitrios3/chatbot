@@ -24,7 +24,7 @@ def get_csv_path() -> str:
             return os.path.join(dataset_dir, file)
     raise FileNotFoundError("No CSV file found in the datasets directory")
 
-def chunk_dataframe(df: pd.DataFrame, chunk_size: int = 100, overlap: int = 40) -> list:
+def chunk_dataframe(df: pd.DataFrame, chunk_size: int = 200, overlap: int = 20) -> list:
     """
     Splits a cleaned DataFrame into smaller overlapping JSON chunks.
     
