@@ -4,7 +4,8 @@ import { Button } from "../components/ui/button";
 import { Loader2, Cog } from 'lucide-react';
 import SelectList from '~/components/ui/selectList';
 import { z } from 'zod';
-import { chunkSizeOptions, fileTypeOptions } from '~/config';
+import { chunkSizeOptions, chunkSizeTooltipText, fileTypeOptions } from '~/config';
+import TooltipBase from '~/components/ui/toolTip';
 
 const searchSchema = z.object({
   fileType: z.string().optional()
@@ -88,6 +89,7 @@ function TrainModelComponent() {
     
       const handleFileTypeChange = (newFileType: string) => {
         setFileType(newFileType);
+        setChunkSize('');
         setMessages([]); 
         setStatus('')
       };
@@ -104,8 +106,8 @@ function TrainModelComponent() {
             <h3 className="text-center text-2xl font-semibold">
             Train the model
             </h3>
-            <h5 className="text-center text-sm font-italic">
-            Once started wait for the process to finish
+            <h5 className="text-center text-md font-italic">
+            Choose a file to process and optionally set the chunk size
             </h5>
             <div className="flex flex-col items-center justify-between">
             <div className="flex items-center mb-4">
@@ -121,6 +123,7 @@ function TrainModelComponent() {
               />
             </div>
             <div className="flex items-center mb-4">
+              <TooltipBase text={chunkSizeTooltipText} />
               <label className="text-gray-300 mr-2">Chunk size:</label>
               <SelectList
                 options={chunkSizeOptions}

@@ -12,11 +12,18 @@ const fileTypeOptions = [
 
 const chunkSizeOptions = [
   { label: "Select chunk size", value: "0" },
-  { label: "100 rows", value: "100" },
-  { label: "300 rows", value: "300" },
-  { label: "500 rows", value: "500" },
-  { label: "700 rows", value: "700" },
-  { label: "900 rows", value: "900" }
+  { label: "100 segments", value: "100" },
+  { label: "300 segments", value: "300" },
+  { label: "500 segments", value: "500" },
+  { label: "700 segments", value: "700" },
+  { label: "900 segments", value: "900" }
 ]
 
-export { modelOptions, fileTypeOptions, chunkSizeOptions };
+const chunkSizeTooltipText = "For CSVs a segment is usually a row, for PDFs a paragraph or sentence group. Larger segments reduce API calls and speed up processing but use more memory and may hit rate limits. Smaller segments use less memory and allow better streaming but require more API calls.";
+
+export { 
+  modelOptions, 
+  fileTypeOptions, 
+  chunkSizeOptions,
+  chunkSizeTooltipText 
+};

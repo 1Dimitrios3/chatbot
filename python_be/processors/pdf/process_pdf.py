@@ -32,7 +32,7 @@ def chunk_text(text, chunk_size=200, overlap=20):
         
         if current_size + sentence_length > chunk_size and current_chunk:
             # Log the chunk details before appending
-            print(f"[CHUNK DEBUG] Appending chunk with {current_size} words and {len(current_chunk)} sentences.")
+            print(f"[CHUNK DEBUG] Appending chunk with {current_size} words and {len(current_chunk)} sentences.", flush=True)
             chunks.append(" ".join(current_chunk))
             # Maintain an overlap: keep only the last 'overlap' sentences (if available)
             current_chunk = current_chunk[-overlap:] if overlap < len(current_chunk) else current_chunk
@@ -85,7 +85,7 @@ def process_pdf(pdf_path, chunk_size):
     print("[DEBUG] Starting chunking process...")
     chunks = chunk_text(full_text, chunk_size, int(chunk_size / 10))
     num_chunks = len(chunks)
-    print(f"[DEBUG] Chunking complete: {num_chunks} chunks created.")
+    print(f"[DEBUG] Chunking complete: {num_chunks} chunks created.", flush=True)
 
     for i, chunk in enumerate(chunks):
         chunk_id = f"{pdf_hash}_chunk_{i}"
@@ -105,14 +105,14 @@ def process_pdf(pdf_path, chunk_size):
         print(f"[DEBUG] Embedding and adding chunk {i + 1}/{num_chunks}: {chunk_id} ...")
         try:
             add_document(chunk_id, chunk)
-            print(f"[DEBUG] Chunk {chunk_id} successfully embedded and added.")
+            print(f"[DEBUG] Chunk {chunk_id} successfully embedded and added.", flush=True)
         except Exception as e:
-            print(f"[ERROR] Error embedding chunk {chunk_id}: {e}")
+            print(f"[ERROR] Error embedding chunk {chunk_id}: {e}", flush=True)
 
 
     try:
         mark_pdf_as_processed(pdf_path, num_chunks, pdf_hash)
-        print("[DEBUG] Marked PDF as processed.")
+        print("[DEBUG] Marked PDF as processed.", flush=True)
         return {"status": "processed", "message": f"PDF {filename} successfully processed!"}
     except Exception as e:
         print(f"[ERROR] Error marking PDF as processed: {e}")
