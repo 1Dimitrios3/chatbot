@@ -45,7 +45,7 @@ def chunk_dataframe(df: pd.DataFrame, chunk_size: int = 200, overlap: int = 20) 
     for i in range(0, len(df), step):
         chunk = df.iloc[i:i+chunk_size]
         chunks.append(chunk.to_json(orient="records"))
-        print(f"Processing chunk {len(chunks)} of approx. {((len(df)-1) // step) + 1}")
+        print(f"Processing chunk {len(chunks)} of approx. {((len(df)-1) // step) + 1}", flush=True)
     
     return chunks
 
@@ -57,7 +57,7 @@ def create_embeddings_from_chunks(json_chunks: list) -> (list, list): # type: ig
     embeddings_list = []  # To store all generated embeddings
     text_records = []     # To map embeddings back to their text
     for i, json_data in enumerate(json_chunks):
-        print(f"🔹 Generating embeddings for chunk {i+1} of {len(json_chunks)}")
+        print(f"🔹 Generating embeddings for chunk {i+1} of {len(json_chunks)}", flush=True)
         # Convert JSON string to a list of dictionaries
         chunk_data = json.loads(json_data)
         
@@ -86,7 +86,7 @@ def create_embeddings_from_chunks(json_chunks: list) -> (list, list): # type: ig
         embeddings_list.extend(chunk_embeddings)
         text_records.extend(text_inputs)
 
-    print(f"✅ Successfully generated {len(embeddings_list)} embeddings.")
+    print(f"✅ Successfully generated {len(embeddings_list)} embeddings.", flush=True)
     return embeddings_list, text_records
 
 def build_faiss_index(embeddings_list: list):

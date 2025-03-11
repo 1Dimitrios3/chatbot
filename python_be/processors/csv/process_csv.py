@@ -203,18 +203,18 @@ def process_csv(csv_path, chunk_size):
     
         print("\n🔹 Generating Embeddings and text records...")
         embeddings, text_records = create_embeddings_from_chunks(json_chunks)
-        print(f"✅ Total Embeddings Created: {len(embeddings)}")
+        print(f"✅ Total Embeddings Created: {len(embeddings)}", flush=True)
     
         print("\n🔹 Building FAISS Index...")
         try:
             faiss_index = build_faiss_index(embeddings)
-            print(f"✅ FAISS index now contains {faiss_index.ntotal} embeddings.")
+            print(f"✅ FAISS index now contains {faiss_index.ntotal} embeddings.", flush=True)
             # Save the index and text records for future runs
             faiss.write_index(faiss_index, INDEX_FILE)
-            print(f"✅ FAISS index saved to {INDEX_FILE}")
+            print(f"✅ FAISS index saved to {INDEX_FILE}", flush=True)
             with open(TEXT_RECORDS_FILE, "w") as f:
                 json.dump(text_records, f)
-            print(f"✅ Text records saved to {TEXT_RECORDS_FILE}")
+            print(f"✅ Text records saved to {TEXT_RECORDS_FILE}", flush=True)
         except Exception as ve:
             error_message = f"Error building FAISS index: {ve}"
             print(error_message)
