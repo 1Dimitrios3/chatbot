@@ -64,4 +64,4 @@ To configure where embeddings are stored and to provide your OpenAI API key, set
 
 * To view embeddings run
  ```bash
-   streamlit run view_embeddings.py
+   streamlit run view_pdf_embeddings.py
