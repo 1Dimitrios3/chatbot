@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from "react";
-import { Bot, Loader2, MessageSquare, Send, User2 } from "lucide-react";
+import { Bot, Loader2, MessageSquare, Send, User2, Copy, CheckCircle, } from "lucide-react";
 import { useSession } from '~/hooks/useSession';
 import Markdown from "react-markdown";
 import { Button } from "../components/ui/button";
@@ -103,7 +103,7 @@ function AIChat() {
       </div>
       <div 
         ref={chatContainerRef} 
-        className="flex-1 p-4 container mx-auto max-w-4xl space-y-4 pb-32 overflow-y-auto"
+        className="flex-1 p-4 container mx-auto max-w-4xl space-y-4 pb-32 overflow-y-auto scrollbar-hide"
         style={{ maxHeight: "calc(100vh - 150px)" }}
         >
       {conversations.map((card, index) => (
@@ -147,7 +147,17 @@ function AIChat() {
 }
 
 const AIMessage: React.FC<{ message: Message, loading?: boolean }> = ({ message, loading }) => {
+  const [copied, setCopied] = useState(false);
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(message.content)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => console.error("Failed to copy text: ", err));
+  };
+  
   return (
     <div
       className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
@@ -168,6 +178,25 @@ const AIMessage: React.FC<{ message: Message, loading?: boolean }> = ({ message,
 
             <span>{message.role === "user" ? "You" : "Assistant"}</span>
           </span>
+          {message.role === "assistant" && (
+            <div className="relative inline-block">
+              <button 
+                onClick={copyToClipboard} 
+                className="text-gray-400 hover:text-white transition"
+                aria-label="Copy to clipboard"
+              >
+                {copied ? <CheckCircle className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
+              </button>
+              {copied && (
+                <span
+                  className="absolute top-0 left-full ml-2 text-xs bg-black text-white px-2 py-1 rounded shadow animate-fadeOut"
+                  onAnimationEnd={() => setCopied(false)}
+                >
+                  Copied!
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {message.role === "assistant" && loading && (
@@ -176,12 +205,7 @@ const AIMessage: React.FC<{ message: Message, loading?: boolean }> = ({ message,
           </div>
         )}
 
-        <article
-          className={`prose max-w-none ${message.role === "user"
-            ? "prose-invert prose-p:text-black prose-headings:text-black prose-strong:text-black prose-li:text-black"
-            : "prose-invert prose-p:text-gray-100 prose-headings:text-gray-100 prose-strong:text-gray-100 prose-li:text-gray-100"
-            }`}
-        >
+        <article className={`prose max-w-none ${message.role === "user" ? "prose-invert prose-p:text-black prose-headings:text-black prose-strong:text-black prose-li:text-black" : "prose-invert prose-p:text-gray-100 prose-headings:text-gray-100 prose-strong:text-gray-100 prose-li:text-gray-100"}`}>
           <Markdown>{message.content}</Markdown>
         </article>
       </div>
