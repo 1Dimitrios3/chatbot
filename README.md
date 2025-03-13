@@ -80,7 +80,8 @@ Try out different queries to interact with the chatbot effectively eg.
 - Show the average values for these columns.
 - What are some trends you observe about the dataset?
 
-**Generating Charts from Categorical Columns** (BETA)
+**Generating Charts from Categorical Columns (BETA)**
+
 If you want a pie chart visualization for a categorical column, append -> 'show piechart' to your query:
 
 Example: 
