@@ -29,7 +29,8 @@ To configure where embeddings are stored and to provide your OpenAI API key, set
 2. Alternatively, you can input your OpenAI API key via the /enterKey route on the app.
 
 3. The project uses ChromaDB for managing pdf document embeddings and Faiss db for csv embeddings. Ensure that the CHROMA_STORAGE_PATH environment variable is set correctly to avoid stale storage issues.
-4. In case you encounter an issue with stale cache where the chat is not responding properly about pdf files try updating the CHROMA_STORAGE_PATH env key.
+
+4. If you encounter an issue where the chatbot is not responding properly about PDF files, try updating the CHROMA_STORAGE_PATH environment variable.
 
 ## Backend Setup
 
@@ -63,5 +64,24 @@ To configure where embeddings are stored and to provide your OpenAI API key, set
 
 
 * To view embeddings run
- ```bash
-   streamlit run view_pdf_embeddings.py
+   ```bash
+      streamlit run view_pdf_embeddings.py
+
+## Examples
+
+Try out different queries to interact with the chatbot effectively eg.
+
+**PDF-Based Queries**
+- What are the key takeaways from the document?
+- Find sections related to [specific topic].
+
+**CSV-Based Queries**
+- Analyze x column for me.
+- Show the average values for these columns.
+- What are some trends you observe about the dataset?
+
+**Generating Charts from Categorical Columns** (BETA)
+If you want a pie chart visualization for a categorical column, append -> 'show piechart' to your query:
+
+Example: 
+- Analyze x column. Show piechart
