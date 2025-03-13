@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/start';
 import { useState, useRef } from 'react';
 import { Button } from "../../components/ui/button";
@@ -6,6 +6,7 @@ import { FileText } from "lucide-react";
 import { CsvList } from '~/components/ui/CsvList';
 import { z } from 'zod';
 import { useQueryClient } from '@tanstack/react-query';
+import { baseUrl } from '~/config';
 
 const searchSchema = z.object({
   fileType: z.string().optional()
@@ -24,7 +25,7 @@ const uploadFile = createServerFn({ method: 'POST' })
     return formData;
   })
   .handler(async ({ data }) => {
-    const response = await fetch("http://localhost:8000/api/csv/upload", {
+    const response = await fetch(`${baseUrl}/api/csv/upload`, {
       method: "POST",
       body: data,
     });
@@ -44,7 +45,6 @@ function UploadCsvComponent() {
     const [uploaded, setUploaded] = useState(false);
     const [message, setMessage] = useState("");
     const queryClient = useQueryClient();
-    const navigate = useNavigate();
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -61,12 +61,6 @@ function UploadCsvComponent() {
           setMessage(data.message || "Upload successful!");
           queryClient.invalidateQueries({ queryKey: ["csvs"] });
           setUploaded(true);
-
-          navigate({
-            from: '/csv/upload',
-            search: (prev) => ({ ...prev, fileType: "csv" }),
-          });
-          
         } catch (error: any) {
           setMessage(error.message || "Upload failed. Please try again.");
         } finally {

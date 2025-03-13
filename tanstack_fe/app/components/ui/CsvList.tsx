@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import { baseUrl } from "~/config";
 
 export function CsvList() {
   const queryClient = useQueryClient();
@@ -7,7 +8,7 @@ export function CsvList() {
   const { data: csvs = [], isLoading, error } = useQuery({
     queryKey: ["csvs"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:8000/api/csv/list");
+      const res = await fetch(`${baseUrl}/api/csv/list`);
       if (!res.ok) throw new Error("Failed to fetch CSVs");
       const data = await res.json();
       return Array.isArray(data) ? data : data.csvs;
@@ -17,7 +18,7 @@ export function CsvList() {
   const deleteMutation = useMutation({
     mutationFn: async (filename: string) => {
       const res = await fetch(
-        `http://localhost:8000/api/csv/delete?filename=${encodeURIComponent(filename)}`,
+        `${baseUrl}/api/csv/delete?filename=${encodeURIComponent(filename)}`,
         { method: "DELETE" }
       );
       if (!res.ok) throw new Error("Failed to delete CSV");

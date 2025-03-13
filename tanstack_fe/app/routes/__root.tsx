@@ -11,6 +11,7 @@ import appCss from "../styles/app.css?url"
 import { DefaultCatchBoundary } from '~/components/ui/DefaultCatchBoundary'
 import { NotFound } from '~/components/ui/NotFound'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { SettingsProvider } from '~/contexts/SettingsContext'
 
 const queryClient = new QueryClient();
 
@@ -43,9 +44,11 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
-    <RootDocument>
-      <Outlet />
-    </RootDocument>
+      <SettingsProvider>
+        <RootDocument>
+          <Outlet />
+        </RootDocument>
+      </SettingsProvider>
   </QueryClientProvider>
   )
 }
@@ -66,6 +69,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
               className: 'font-bold',
             }}
             activeOptions={{ exact: true }}
+            search={searchParams}
           >
             Home
           </Link>{' '}
@@ -104,6 +108,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
             activeProps={{
               className: 'font-bold',
             }}
+            search={searchParams}
           >
             Chat
           </Link>{' '}

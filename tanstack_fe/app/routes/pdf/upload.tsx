@@ -1,10 +1,11 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/start';
 import { useState, useRef, useMemo } from 'react';
 import { Button } from "../../components/ui/button";
 import { FileText } from "lucide-react"
 import { PdfList } from '~/components/ui/PdfList';
 import { useQueryClient } from '@tanstack/react-query';
+import { baseUrl } from '~/config';
 
 export const Route = createFileRoute('/pdf/upload')({
   component: UploadPdfComponent,
@@ -18,7 +19,7 @@ const uploadFile = createServerFn({ method: 'POST' })
     return formData;
   })
   .handler(async ({ data }) => {
-    const response = await fetch("http://localhost:8000/api/pdf/upload", {
+    const response = await fetch(`${baseUrl}/api/pdf/upload`, {
       method: "POST",
       body: data,
     });
@@ -38,7 +39,6 @@ function UploadPdfComponent() {
     const [uploaded, setUploaded] = useState(false);
     const [message, setMessage] = useState("");
     const queryClient = useQueryClient();
-    const navigate = useNavigate();
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -55,10 +55,6 @@ function UploadPdfComponent() {
           setMessage(data.message || "Upload successful!");
           queryClient.invalidateQueries({ queryKey: ["pdfs"] });
           setUploaded(true);
-          navigate({
-            from: '/pdf/upload',
-            search: (prev) => ({ ...prev, fileType: "pdf" }),
-          });
         } catch (error: any) {
           setMessage(error.message || "Upload failed. Please try again.");
         } finally {

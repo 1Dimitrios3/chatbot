@@ -7,6 +7,8 @@ import faiss
 from schemas.variables import *
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import Optional, Dict
+from stores.chart_store import chart_data_store
 
 # Set display options to show all columns
 pd.set_option('display.max_columns', None)
@@ -174,9 +176,11 @@ def get_totals(csv_path):
 # print("Totals for each numeric column:")
 # print(totals)
 
-def create_category_aggregates(csv_path):
+def create_category_aggregates(csv_path: str, column_of_interest: str = None):
      """
      Computes a set of aggregates for each column.
+
+     column_of_interest -> we need this argument even if not used for llm inference via tool
 
      For numeric columns, computes:
        - Count, Missing Count, Sum, Mean, Median, Std, Variance, Min,
@@ -248,7 +252,7 @@ def create_category_aggregates(csv_path):
 
      numeric_df = pd.DataFrame(numeric_metrics).T
      categorical_df = pd.DataFrame(categorical_metrics).T
-     return numeric_df, categorical_df.T
+     return numeric_df, categorical_df
 
 # Generate aggregates
 # numeric_aggregates, categorical_aggregates = create_category_aggregates(csv_path)
@@ -383,4 +387,78 @@ async def stream_openai_response(response_iterator):
         if delta.content:
             yield delta.content
 
+def generate_pie_chart_data(csv_path: str, column_of_interest: Optional[str] = None, session_id: Optional[str] = None) -> Optional[Dict]:
+    """
+    Generates pie chart data from a CSV file for a given column if it is categorical.
+    
+    For a categorical column, it computes the frequency distribution of each category.
+    
+    Parameters:
+        csv_path (str): The path to the CSV file.
+        column_of_interest (Optional[str]): The name of the column to analyze.
+        session_id (Optional[str]): If provided, the chart data is stored in the global chart_data_store under this session ID.
+        
+    Returns:
+        Optional[Dict]: A dictionary with a "pie_chart" key containing "labels" and "values",
+                        or None if the conditions are not met.
+    """
+    # Clear any previously stored chart data for this session.
+    if session_id is not None and session_id in chart_data_store:
+        chart_data_store.pop(session_id)
+    
+    # Read and clean the CSV file.
+    df = pd.read_csv(csv_path)
+    df = clean_df_text(df)  # Use your cleaning function if needed.
 
+    if column_of_interest:
+        # Normalize the column name for case-insensitive comparison.
+        column_norm = column_of_interest.strip().lower()
+        df_columns_norm = [col.strip().lower() for col in df.columns]
+        
+        # Try for an exact match first.
+        if column_norm in df_columns_norm:
+            matched_col = df.columns[df_columns_norm.index(column_norm)]
+        else:
+            # If no exact match, try substring matching.
+            matched_col = None
+            for original, norm in zip(df.columns, df_columns_norm):
+                if column_norm in norm:
+                    matched_col = original
+                    break
+                    
+        if matched_col:
+            # Check if the column is categorical (i.e. not numeric).
+            if not pd.api.types.is_numeric_dtype(df[matched_col]):
+                distribution = df[matched_col].value_counts()
+                labels = distribution.index.tolist()   # e.g., ["Mobile", "Laptop", "Tablet", "Smart TV"]
+                values = distribution.tolist()           # e.g., [2, 2, 2, 3]
+                
+                chart_data = {
+                    "pie_chart": {
+                        "labels": labels,
+                        "values": values
+                    }
+                }
+                
+                if session_id is not None:
+                    chart_data_store[session_id] = chart_data
+                    
+                return chart_data
+            else:
+                print(f"Column '{matched_col}' is numeric. Pie chart generation is only allowed for categorical columns.")
+                # Clear any previous chart data for this session.
+                if session_id in chart_data_store:
+                    chart_data_store.pop(session_id)
+        else:
+            print("No matching column found. column_of_interest_norm:", column_norm)
+            print("Normalized DataFrame columns:", df_columns_norm)
+    else:
+        print("No column_of_interest provided; cannot generate chart data.")
+    
+    return None
+
+
+def should_show_piechart(query: str) -> bool:
+    # This regex checks (case-insensitively) that the query contains both "show" and "pie chart" or "piechart"
+    pattern = re.compile(r'(?i)(?=.*\bshow\b)(?=.*\bpie[\s-]?chart\b)')
+    return bool(pattern.search(query))

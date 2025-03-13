@@ -27,6 +27,10 @@ tools = [
                     "csv_path": {
                         "type": "string",
                         "description": "Path to the CSV file"
+                    },
+                     "column_of_interest": {
+                        "type": "string",
+                        "description": "Name of the column to focus on for charting"
                     }
                 },
                 "required": ["csv_path"]

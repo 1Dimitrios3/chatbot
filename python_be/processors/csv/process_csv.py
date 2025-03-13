@@ -16,14 +16,22 @@ async def augment_summary_with_description(summary, query: str, model: str):
     summary_str = summary.to_string() if hasattr(summary, "to_string") else str(summary)
     
     prompt = (
-        "Below is a summary table showing key statistics for a dataset (provided for context only):\n"
-        f"{summary_str}\n\n"
-        "Based on the above data, please provide a concise explanation of the key insights. "
-        "Do NOT include the raw table data in your response. "
-        "Only include the raw table data if the user explicitly requests it (for example, using phrases like 'raw data' or 'raw table').\n\n"
-        f"User Query: {query}\n"
+        "Below is a dataset summary. When analyzing a dataset, always focus on **categorical distributions, trends, and frequency insights** first. " +
+        "Only provide numerical statistics (such as min, max, or mean) if the user explicitly requests them.\n\n" +
+        "- For a **categorical column**, retrieve insights such as category distributions, unique values, and the most/least frequent values.\n" +
+        "- For a **numeric column**, first check if the data can be grouped into meaningful categories and then provide categorical insights (such as frequency patterns).\n" +
+        "Do not suggest generating charts for numeric columns.\n" +
+        "- **Only if the user explicitly asks for \"minimum\", \"maximum\", \"mean\", or \"average\" should you call the `get_min_max_mean` tool.** Otherwise, focus on the categorical analysis.\n\n" +
+        "If no specific column is mentioned, call the `create_category_aggregates` tool to compute aggregates for all columns.\n\n" +
+        "Summary of the dataset:\n" +
+        f"{summary_str}\n\n" +
+        "Based on the above data, explain the key insights. " +
+        "Do NOT include the raw table data in your response. " +
+        "Only include the raw table data if the user explicitly requests it (for example, using phrases like \"raw data\" or \"raw table\").\n\n" +
+        f"User Query: {query}\n" +
         "Your explanation:"
     )
+
     
     response = openai.chat.completions.create(
         model=model,
@@ -145,7 +153,27 @@ async def ask_question_about_dataset(
                     yield subchunk
             elif function_name == "create_category_aggregates":
                 res = create_category_aggregates(**arguments)
-                async for subchunk in augment_summary_with_description(res[1], query, model):
+                numeric_df = res[0]
+                categorical_df = res[1]
+
+                # Create a summary text combining both numeric and categorical aggregates.
+                summary_text = (
+                    "Numeric Aggregates:\n" + numeric_df.to_string() +
+                    "\n\nCategorical Aggregates:\n" + categorical_df.to_string()
+                )
+                
+                # If the user requested charts, compute and store the chart data BEFORE streaming text.
+                if should_show_piechart(query):
+                    csv_path = arguments.get("csv_path")
+                    column_of_interest = arguments.get("column_of_interest")
+                    
+                    chart_data = generate_pie_chart_data(csv_path, column_of_interest, session_id)
+                    if chart_data:
+                        print("Chart data generated:", chart_data)
+                    else:
+                        print("No chart data generated.")
+                
+                async for subchunk in augment_summary_with_description(summary_text, query, model):
                     full_response += subchunk
                     yield subchunk
             elif function_name == "compare_columns":

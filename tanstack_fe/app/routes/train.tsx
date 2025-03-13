@@ -4,8 +4,10 @@ import { Button } from "../components/ui/button";
 import { Loader2, Cog } from 'lucide-react';
 import SelectList from '~/components/ui/selectList';
 import { z } from 'zod';
-import { chunkSizeOptions, chunkSizeTooltipText, fileTypeOptions } from '~/config';
+import { baseUrl, chunkSizeOptions, chunkSizeTooltipText, fileTypeOptions } from '~/config';
 import TooltipBase from '~/components/ui/toolTip';
+import { useSettings } from '~/contexts/SettingsContext';
+import { FileType } from '~/types';
 
 const searchSchema = z.object({
   fileType: z.string().optional()
@@ -20,10 +22,7 @@ function TrainModelComponent() {
     const [loading, setLoading] = useState(false);
     const [messages, setMessages] = useState<string[]>([]);
     const [status, setStatus] = useState('');
-    const searchParams = useSearch({ from: '/train' });
-
-    const [fileType, setFileType] = useState(searchParams.fileType ?? "pdf");
-    const [chunkSize, setChunkSize] = useState('');
+    const { chunkSize, setChunkSize, selectFileType, setSelectFileType } = useSettings();
   
     useEffect(() => {
         // Connect to WebSocket
@@ -73,7 +72,7 @@ function TrainModelComponent() {
         setMessages([]);
     
         try {
-          const response = await fetch(`http://localhost:8000/api/train?file_type=${fileType}&chunk_size=${chunkSize}`, {
+          const response = await fetch(`${baseUrl}/api/train?file_type=${selectFileType}&chunk_size=${chunkSize}`, {
             method: "POST",
           });
     
@@ -87,8 +86,8 @@ function TrainModelComponent() {
         }
       };
     
-      const handleFileTypeChange = (newFileType: string) => {
-        setFileType(newFileType);
+      const handleFileTypeChange = (newFileType: FileType) => {
+        setSelectFileType(newFileType);
         setChunkSize('');
         setMessages([]); 
         setStatus('')
@@ -116,7 +115,7 @@ function TrainModelComponent() {
             </label>
               <SelectList
                 options={fileTypeOptions}
-                selectedValue={fileType}
+                selectedValue={selectFileType}
                 disabled={loading}
                 onChange={handleFileTypeChange}
                 placeholder="Select file type"

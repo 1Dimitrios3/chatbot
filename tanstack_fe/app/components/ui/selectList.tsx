@@ -9,21 +9,21 @@ interface Option {
   disabled?: boolean;
 }
 
-interface SelectListProps {
+interface SelectListProps<T extends string> {
   options: Option[];
-  selectedValue: string;
-  onChange: ((value: string) => void) | undefined;
+  selectedValue: T;
+  onChange: ((value: T) => void) | undefined;
   placeholder?: string;
   disabled?: boolean;
 }
 
-export const SelectList: React.FC<SelectListProps> = ({
+export const SelectList = <T extends string>({
   options,
   selectedValue,
   onChange,
   placeholder = "Select an option",
   disabled
-}) => {
+}: SelectListProps<T>) => {
   return (
     <Select.Root value={selectedValue} disabled={disabled} onValueChange={onChange}>
       <Select.Trigger

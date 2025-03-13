@@ -12,6 +12,8 @@ from helpers.pdf.helpers import openai_stream_generator, clear_pdf_embeddings
 from fastapi.responses import StreamingResponse
 from processors.csv.process_csv import process_all_csvs, get_csv_index_records, process_query, ask_question_about_dataset
 from typing import List
+from stores.chart_store import chart_data_store
+from fastapi.responses import JSONResponse
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -24,7 +26,7 @@ app.add_middleware(
     allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "DELETE"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["*"],
 )
 
 # Ensure the `/pdfs` directory exists
@@ -413,3 +415,15 @@ async def chat_csv_endpoint(request: ChatRequest):
     stream_generator = ask_question_about_dataset(selected_chunks, query, session_id, model=selected_model)
     
     return StreamingResponse(stream_generator, media_type="text/plain")
+
+@app.get("/api/csv/chart-data/{session_id}")
+async def get_chart_data(session_id: str):
+    """
+    Retrieves stored chart data (numeric and categorical) for a given session.
+    """
+    chart_data = chart_data_store.get(session_id)
+    
+    if not chart_data:
+        return JSONResponse(content={"detail": "Chart data not found for this session."}, status_code=200)
+    
+    return JSONResponse(content=chart_data)

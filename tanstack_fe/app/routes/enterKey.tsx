@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Button } from "../components/ui/button";
 import { createServerFn } from '@tanstack/start';
+import { baseUrl } from '~/config';
 
 export const Route = createFileRoute('/enterKey')({
   component: EnterKeyComponent,
@@ -23,7 +24,7 @@ export const updateApiKey = createServerFn({ method: 'POST' })
     return { api_key: trimmedKey };
   })
   .handler(async ({ data }) => {
-    const response = await fetch("http://localhost:8000/api/input/key", {
+    const response = await fetch(`${baseUrl}/api/input/key`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

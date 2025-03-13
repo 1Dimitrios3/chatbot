@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import { baseUrl } from "~/config";
 
 export function PdfList() {
   const queryClient = useQueryClient();
@@ -7,7 +8,7 @@ export function PdfList() {
   const { data: pdfs = [], isLoading, error } = useQuery({
     queryKey: ["pdfs"],
     queryFn: async () => {
-      const res = await fetch("http://localhost:8000/api/pdf/list");
+      const res = await fetch(`${baseUrl}/api/pdf/list`);
       if (!res.ok) throw new Error("Failed to fetch PDFs");
       const data = await res.json();
       return Array.isArray(data) ? data : data.pdfs;
@@ -18,7 +19,7 @@ export function PdfList() {
     {
       mutationFn: async (filename: string) => {
         const res = await fetch(
-          `http://localhost:8000/api/pdf/delete?filename=${encodeURIComponent(
+          `${baseUrl}/api/pdf/delete?filename=${encodeURIComponent(
             filename
           )}`,
           { method: "DELETE" }

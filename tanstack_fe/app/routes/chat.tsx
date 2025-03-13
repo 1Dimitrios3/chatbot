@@ -9,18 +9,11 @@ import { streamChat } from '~/utils/streamChat';
 import SelectList from '~/components/ui/selectList';
 import { fileTypeOptions, modelOptions } from '~/config';
 import ToggleGroupBase from '~/components/ui/toggleGroup';
-import { FileType } from '~/types';
+import { ConversationCard, FileType, Message } from '~/types';
 import React from 'react';
-
-type Message = {
-  role: "user" | "assistant" | "tool" | "system";
-  content: string;
-};
-
-type ConversationCard = {
-    user: Message;
-    assistant: Message;
-};
+import PieChart from '~/components/ui/Piechart';
+import { fetchPieChartData } from '~/services/fetchPieChartData';
+import { useSettings } from '~/contexts/SettingsContext';
 
 export const Route = createFileRoute("/chat")({
   component: AIChat,
@@ -30,10 +23,14 @@ function AIChat() {
     const [conversations, setConversations] = useState<ConversationCard[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [selectModel, setSelectModel] = useState("gpt-4o-mini")
-    const [selectFileType, setSelectFileType] = useState<FileType>("pdf");
+    const { 
+      selectModel, 
+      setSelectModel, 
+      selectFileType, 
+      setSelectFileType 
+    } = useSettings();
 
-    const sessionId = useSession();
+    const sessionId = useSession() || '';
 
     const chatContainerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -58,10 +55,10 @@ function AIChat() {
 
         // Add the new card to the history
         setConversations((prev) => [...prev, newCard]);
-        
+
         try {
         await streamChat({
-          sessionId: sessionId || '',
+          sessionId: sessionId,
           message: userMessage,
           selectModel: selectModel,
           selectedFileType: selectFileType,
@@ -77,6 +74,9 @@ function AIChat() {
             });
           }
         });
+
+        await fetchPieChartData(userMessage, sessionId, setConversations);
+
         } catch (error) {
           console.error("Error streaming response:", error);
         } finally {
@@ -157,7 +157,7 @@ const AIMessage: React.FC<{ message: Message, loading?: boolean }> = ({ message,
       })
       .catch((err) => console.error("Failed to copy text: ", err));
   };
-  
+
   return (
     <div
       className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
@@ -208,6 +208,12 @@ const AIMessage: React.FC<{ message: Message, loading?: boolean }> = ({ message,
         <article className={`prose max-w-none ${message.role === "user" ? "prose-invert prose-p:text-black prose-headings:text-black prose-strong:text-black prose-li:text-black" : "prose-invert prose-p:text-gray-100 prose-headings:text-gray-100 prose-strong:text-gray-100 prose-li:text-gray-100"}`}>
           <Markdown>{message.content}</Markdown>
         </article>
+
+        {message.chartData && (
+          <div className="mt-4 flex justify-center">
+            <PieChart pieData={message.chartData} />
+          </div>
+        )}
       </div>
     </div>
   )
