@@ -21,7 +21,7 @@ const chunkSizeOptions = [
   { label: "900 segments", value: "900" }
 ]
 
-const chunkSizeTooltipText = "For CSVs a segment is usually a row, for PDFs a paragraph or sentence group. Larger segments reduce API calls and speed up processing but use more memory and may hit rate limits. Smaller segments use less memory and allow better streaming but require more API calls.";
+const chunkSizeTooltipText = "For CSVs a segment is usually a row, for PDFs a word. Larger segments reduce API calls and speed up processing but use more memory and may hit rate limits. Smaller segments use less memory and allow better streaming but require more API calls.";
 
 const baseUrl = 'http://localhost:8000';
 

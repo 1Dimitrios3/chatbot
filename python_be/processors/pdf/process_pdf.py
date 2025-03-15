@@ -18,36 +18,55 @@ def add_document(id, text):
     )
 
 def chunk_text(text, chunk_size=200, overlap=20):
-    """Split text into overlapping chunks without breaking sentences."""
-    # non library approach
-    # sentences = re.split(r'(?<=[.!?])\s+', text)
-    # Use nltk's sentence tokenizer
+    """Split text into overlapping chunks without breaking sentences,
+       and handle sentences that exceed the chunk size by splitting them further."""
     sentences = sent_tokenize(text)
-
-    chunks, current_chunk = [], []
+    chunks = []
+    current_chunk = []
     current_size = 0
 
-    for sentence in sentences:
-        sentence_length = len(sentence.split())
-        
-        if current_size + sentence_length > chunk_size and current_chunk:
-            # Log the chunk details before appending
+    def add_current_chunk():
+        nonlocal current_chunk, current_size
+        if current_chunk:
             print(f"[CHUNK DEBUG] Appending chunk with {current_size} words and {len(current_chunk)} sentences.", flush=True)
+            # Append the current chunk
             chunks.append(" ".join(current_chunk))
-            # Maintain an overlap: keep only the last 'overlap' sentences (if available)
+            # Retain an overlap of the last few sentences
             current_chunk = current_chunk[-overlap:] if overlap < len(current_chunk) else current_chunk
             current_size = sum(len(s.split()) for s in current_chunk)
 
+    for sentence in sentences:
+        sentence_words = sentence.split()
+        sentence_length = len(sentence_words)
+
+        # If the sentence itself is longer than the chunk size, split it further.
+        if sentence_length > chunk_size:
+            # Flush any existing chunk first.
+            add_current_chunk()
+            print(f"[CHUNK DEBUG] Splitting long sentence with {sentence_length} words.", flush=True)
+            # Split the long sentence into smaller parts.
+            for i in range(0, sentence_length, chunk_size):
+                sub_chunk = " ".join(sentence_words[i:i + chunk_size])
+                # DEBUG: Print details of each sub-chunk created.
+                print(f"[CHUNK DEBUG] Appending sub-chunk with {len(sub_chunk.split())} words.", flush=True)
+                chunks.append(sub_chunk)
+            continue  # Skip the rest of the loop for this sentence
+
+        # If adding this sentence would exceed the chunk size, flush the current chunk.
+        if current_size + sentence_length > chunk_size and current_chunk:
+            add_current_chunk()
+
+        # Add the sentence to the current chunk.
         current_chunk.append(sentence)
         current_size += sentence_length
 
+    # Append any remaining sentences as the final chunk.
     if current_chunk:
-        print(f"[CHUNK DEBUG] Appending final chunk with {current_size} words and {len(current_chunk)} sentences.")
+        print(f"[CHUNK DEBUG] Appending final chunk with {current_size} words and {len(current_chunk)} sentences.", flush=True)
         chunks.append(" ".join(current_chunk))
 
-    print(f"[CHUNK DEBUG] Total chunks created: {len(chunks)}")
+    print(f"[CHUNK DEBUG] Total chunks created: {len(chunks)}", flush=True)
     return chunks
-
 
 
 def process_pdf(pdf_path, chunk_size):

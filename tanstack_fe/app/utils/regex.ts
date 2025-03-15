@@ -4,4 +4,13 @@ function shouldShowPieChart(query: string) {
     return regex.test(query);
   }
 
-  export { shouldShowPieChart }
+function shouldShowBarChart(query: string): boolean {
+    // The regex checks (case-insensitive) that "show" appears,
+    // and that "bar" is followed by zero or more non-word characters,
+    // then either "chart" or "graph". This covers "bar chart", "bar-chart", "bar graph", "bar-graph", and "bargraph".
+    const regex = /(?=.*\bshow\b)(?=.*\bbar\W*(?:chart|graph)\b)/i;
+    return regex.test(query);
+  }
+  
+
+  export { shouldShowPieChart, shouldShowBarChart }

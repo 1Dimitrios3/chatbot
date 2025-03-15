@@ -462,3 +462,76 @@ def should_show_piechart(query: str) -> bool:
     # This regex checks (case-insensitively) that the query contains both "show" and "pie chart" or "piechart"
     pattern = re.compile(r'(?i)(?=.*\bshow\b)(?=.*\bpie[\s-]?chart\b)')
     return bool(pattern.search(query))
+
+def should_show_barchart(query: str) -> bool:
+    """
+    Determines if the query indicates a bar chart should be shown.
+    
+    The regex below checks (case-insensitively) that the query contains the word "show"
+    and one of the following variations:
+      - "bar chart"
+      - "bar-chart"
+      - "bar graph"
+      - "bar-graph"
+      - "bargraph"
+    """
+    pattern = re.compile(
+        r'(?i)(?=.*\bshow\b)(?=.*\bbar(?:[\s-]*(?:chart|graph))\b)'
+    )
+    return bool(pattern.search(query))
+
+def generate_bar_chart_data_for_numeric_summary(csv_path: str, session_id: Optional[str] = None) -> Optional[Dict]:
+    """
+    Generates bar chart data for a grouped bar chart visualization from numeric summary statistics.
+    
+    This chart shows min, max, and mean values for each numeric column in the CSV file.
+    
+    Parameters:
+        csv_path (str): The path to the CSV file.
+        session_id (Optional[str]): Optional session identifier to store the chart data.
+    
+    Returns:
+        Optional[Dict]: A dictionary formatted for Chart.js containing labels and datasets,
+                        or None if an error occurs.
+    """
+    try:
+        # Get the numeric summary DataFrame from get_min_max_mean
+        numeric_summary = get_min_max_mean(csv_path)
+        
+        # Prepare the labels (column names) for the chart.
+        labels = list(numeric_summary.columns)
+        
+        # Define colors for each statistic.
+        colors = {
+            'min': 'rgba(255, 99, 132, 0.6)',
+            'max': 'rgba(54, 162, 235, 0.6)',
+            'mean': 'rgba(255, 206, 86, 0.6)'
+        }
+        
+        # Create datasets for each statistic.
+        datasets = []
+        for stat in ['min', 'max', 'mean']:
+            if stat in numeric_summary.index:
+                dataset = {
+                    "label": stat.capitalize(),
+                    "data": numeric_summary.loc[stat].tolist(),
+                    "backgroundColor": colors[stat]
+                }
+                datasets.append(dataset)
+        
+        # Construct the chart data in the format expected by Chart.js.
+        chart_data = {
+            "bar_chart": {
+                "labels": labels,
+                "datasets": datasets
+            }
+        }
+        
+        # Optionally store the chart data in a global chart_data_store if session_id is provided.
+        if session_id is not None:
+            chart_data_store[session_id] = chart_data
+        
+        return chart_data
+    except Exception as e:
+        print("Error generating bar chart data:", str(e))
+        return None

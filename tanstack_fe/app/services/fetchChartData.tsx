@@ -1,14 +1,14 @@
-// In your utils or a separate file, define the helper function:
 import { baseUrl } from '~/config';
 import { ConversationCard } from '~/types';
-import { shouldShowPieChart } from '~/utils/regex';
+import { shouldShowPieChart, shouldShowBarChart } from '~/utils/regex';
 
-async function fetchPieChartData(
+async function fetchChartData(
   userMessage: string,
   sessionId: string,
   setConversations: React.Dispatch<React.SetStateAction<ConversationCard[]>>
 ) {
-  if (!shouldShowPieChart(userMessage)) {
+  // If the user's message doesn't indicate a chart request, skip fetching.
+  if (!shouldShowPieChart(userMessage) && !shouldShowBarChart(userMessage)) {
     return;
   }
   
@@ -17,6 +17,7 @@ async function fetchPieChartData(
     const response = await fetch(`${baseUrl}/api/csv/chart-data/${sessionId}`);
     if (response.ok) {
       const chartData = await response.json();
+      // Update the last conversation card with the complete chartData object.
       setConversations((prev) => {
         const updated = [...prev];
         const lastIndex = updated.length - 1;
@@ -24,7 +25,7 @@ async function fetchPieChartData(
           ...updated[lastIndex],
           assistant: {
             ...updated[lastIndex].assistant,
-            chartData: chartData.pie_chart,
+            chartData: chartData,
           },
         };
         return updated;
@@ -37,4 +38,4 @@ async function fetchPieChartData(
   }
 }
 
-export { fetchPieChartData };
+export { fetchChartData };

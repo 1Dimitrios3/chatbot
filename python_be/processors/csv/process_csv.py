@@ -22,6 +22,7 @@ async def augment_summary_with_description(summary, query: str, model: str):
         "- For a **numeric column**, first check if the data can be grouped into meaningful categories and then provide categorical insights (such as frequency patterns).\n" +
         "Do not suggest generating charts for numeric columns.\n" +
         "- **Only if the user explicitly asks for \"minimum\", \"maximum\", \"mean\", or \"average\" should you call the `get_min_max_mean` tool.** Otherwise, focus on the categorical analysis.\n\n" +
+        "If the user query mentions a specific column, call the `create_category_aggregates` tool with that column as the 'column_of_interest'." +
         "If no specific column is mentioned, call the `create_category_aggregates` tool to compute aggregates for all columns.\n\n" +
         "Summary of the dataset:\n" +
         f"{summary_str}\n\n" +
@@ -148,6 +149,13 @@ async def ask_question_about_dataset(
             # Based on the tool call, stream the follow-up answer.
             if function_name == "get_min_max_mean":
                 res = get_min_max_mean(**arguments)
+
+                if should_show_barchart(query):
+                    bar_chart_data = generate_bar_chart_data_for_numeric_summary(arguments["csv_path"], session_id)
+                    if bar_chart_data:
+                        print("Chart data generated:", bar_chart_data)
+                    else:
+                        print("No chart data generated.")
                 async for subchunk in augment_summary_with_description(res, query, model):
                     full_response += subchunk
                     yield subchunk

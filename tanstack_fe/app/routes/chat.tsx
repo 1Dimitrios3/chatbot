@@ -12,7 +12,8 @@ import ToggleGroupBase from '~/components/ui/toggleGroup';
 import { ConversationCard, FileType, Message } from '~/types';
 import React from 'react';
 import PieChart from '~/components/ui/Piechart';
-import { fetchPieChartData } from '~/services/fetchPieChartData';
+import BarChart from '~/components/ui/Barchart';
+import { fetchChartData } from '~/services/fetchChartData';
 import { useSettings } from '~/contexts/SettingsContext';
 
 export const Route = createFileRoute("/chat")({
@@ -75,7 +76,7 @@ function AIChat() {
           }
         });
 
-        await fetchPieChartData(userMessage, sessionId, setConversations);
+        await fetchChartData(userMessage, sessionId, setConversations);
 
         } catch (error) {
           console.error("Error streaming response:", error);
@@ -211,7 +212,11 @@ const AIMessage: React.FC<{ message: Message, loading?: boolean }> = ({ message,
 
         {message.chartData && (
           <div className="mt-4 flex justify-center">
-            <PieChart pieData={message.chartData} />
+            {message.chartData.pie_chart ? (
+              <PieChart pieData={message.chartData.pie_chart} />
+            ) : message.chartData.bar_chart ? (
+              <BarChart barData={message.chartData.bar_chart} />
+            ) : null}
           </div>
         )}
       </div>
