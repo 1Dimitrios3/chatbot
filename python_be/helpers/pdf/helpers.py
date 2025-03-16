@@ -46,7 +46,7 @@ collection = chroma_client.get_or_create_collection(
 metadata_collection = chroma_client.get_or_create_collection(name="metadata")
 
 
-def get_pdf_hash(pdf_path):
+def get_pdf_hash(pdf_path: str) -> str:
     """Generate a SHA-256 hash for a PDF file."""
     hasher = hashlib.sha256()
     with open(pdf_path, "rb") as f:
@@ -185,7 +185,7 @@ def embed_text(text):
     )
     return response.data[0].embedding
 
-def search_docs(query, top_k=5, min_score=0.7):
+def search_docs(query, top_k=10, min_score=0.7):
     """Retrieve relevant document chunks using embeddings."""
     query_embedding = embed_text(query)
     results = collection.query(
@@ -195,9 +195,11 @@ def search_docs(query, top_k=5, min_score=0.7):
     
     # Extract text from retrieved results
     retrieved_texts = []
-    for doc in results["metadatas"][0]:
-        if doc.get("score", 1) >= min_score:  # Only include high-confidence results
-            retrieved_texts.append(doc["text"])
+    for group in results.get("metadatas", []):
+        for doc in group:
+            score = doc.get("score", 1)  # Default score if not provided
+            if score >= min_score and "text" in doc:
+                retrieved_texts.append(doc["text"])
     
     return retrieved_texts
 

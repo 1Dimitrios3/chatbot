@@ -10,9 +10,13 @@ tools = [
                     "csv_path": {
                         "type": "string",
                         "description": "Path to the CSV file"
+                    },
+                    "encoding": {
+                        "type": "string",
+                        "description": "The encoding of the CSV file (e.g., 'utf-8', 'latin1'). Defaults to 'utf-8' if not provided."
                     }
                 },
-                "required": ["csv_path"]
+                "required": ["csv_path", "encoding"]
             },
         }
     },
@@ -28,12 +32,16 @@ tools = [
                         "type": "string",
                         "description": "Path to the CSV file"
                     },
+                    "encoding": {
+                        "type": "string",
+                        "description": "The encoding of the CSV file (e.g., 'utf-8', 'latin1'). Defaults to 'utf-8' if not provided."
+                    },
                      "column_of_interest": {
                         "type": "string",
                         "description": "Name of the column to focus on for charting"
                     }
                 },
-                "required": ["csv_path"]
+                "required": ["csv_path", "encoding"]
             },
         }
     },
@@ -56,9 +64,13 @@ tools = [
                     "column2": {
                         "type": "string",
                         "description": "Name of the second column to compare"
-                    }
+                    },
+                    "encoding": {
+                        "type": "string",
+                        "description": "The encoding of the CSV file (e.g., 'utf-8', 'latin1'). Defaults to 'utf-8' if not provided."
+                    },
                 },
-                "required": ["csv_path", "column1", "column2"]
+                "required": ["csv_path", "column1", "column2", "encoding"]
             },
         }
     }

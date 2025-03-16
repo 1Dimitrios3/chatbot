@@ -8,6 +8,7 @@ from schemas.variables import *
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Optional, Dict
+import chardet
 from stores.chart_store import chart_data_store
 
 # Set display options to show all columns
@@ -25,6 +26,15 @@ def get_csv_path() -> str:
         if file.endswith(".csv"):
             return os.path.join(dataset_dir, file)
     raise FileNotFoundError("No CSV file found in the datasets directory")
+
+def detect_encoding(file_path, num_bytes=10000):
+    """
+    Detects the encoding of the file by reading a sample of bytes.
+    """
+    with open(file_path, 'rb') as f:
+        raw_data = f.read(num_bytes)
+    detected = chardet.detect(raw_data)
+    return detected.get('encoding', 'utf-8')  # Fallback to UTF-8 if not detected
 
 def chunk_dataframe(df: pd.DataFrame, chunk_size: int = 200, overlap: int = 20) -> list:
     """
@@ -122,12 +132,12 @@ def reset_faiss_index():
     else:
         print(f"Text records file not found: {TEXT_RECORDS_FILE}")
         
-def prepare_clean_data(csv_path: str) -> pd.DataFrame:
+def prepare_clean_data(csv_path: str, encoding: str = "utf-8") -> pd.DataFrame:
     """
     Reads a CSV file, cleans the data by removing duplicates and missing values,
     and returns a cleaned DataFrame.
     """
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, encoding=encoding)
     df.drop_duplicates(inplace=True)
     df.dropna(inplace=True)
     df.reset_index(drop=True, inplace=True)
@@ -147,8 +157,8 @@ def clean_df_text(df):
      return df
 
 
-def get_min_max_mean(csv_path):
-     df = pd.read_csv(csv_path)
+def get_min_max_mean(csv_path, encoding: str = "utf-8"):
+     df = pd.read_csv(csv_path, encoding=encoding)
      results = clean_df_text(df)
      numeric_summary = results.describe().loc[['min', 'max', 'mean']]
 
@@ -162,8 +172,8 @@ def get_min_max_mean(csv_path):
 # print("Summary Statistics (min, max, mean) for each column:")
 # print(summary_stats)
 
-def get_totals(csv_path):
-     df = pd.read_csv(csv_path)
+def get_totals(csv_path, encoding: str = "utf-8"):
+     df = pd.read_csv(csv_path, encoding=encoding)
      # Clean the DataFrame first
      df = clean_df_text(df)
 
@@ -176,7 +186,7 @@ def get_totals(csv_path):
 # print("Totals for each numeric column:")
 # print(totals)
 
-def create_category_aggregates(csv_path: str, column_of_interest: str = None):
+def create_category_aggregates(csv_path: str, encoding: str = "utf-8",  column_of_interest: str = None):
      """
      Computes a set of aggregates for each column.
 
@@ -191,7 +201,7 @@ def create_category_aggregates(csv_path: str, column_of_interest: str = None):
          Top 3 most frequent values and their frequencies,
          Lowest 3 least frequent values and their frequencies.
      """
-     df = pd.read_csv(csv_path)
+     df = pd.read_csv(csv_path, encoding=encoding)
      df = clean_df_text(df)
 
      numeric_cols = df.select_dtypes(include=['number']).columns
@@ -277,12 +287,12 @@ def find_column(df_columns, query_col):
             return col
     return None
 
-def compare_columns(csv_path: str, column1: str, column2: str) -> str:
+def compare_columns(csv_path: str, column1: str, column2: str, encoding='utf-8') -> str:
     """
     Compares two columns in the dataset by performing a cross-tabulation.
     Returns the result as a formatted string.
     """
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, encoding=encoding)
     # Normalize column names.
     df.columns = df.columns.str.strip().str.lower()
     normalized_col1 = column1.strip().lower()
@@ -300,84 +310,6 @@ def compare_columns(csv_path: str, column1: str, column2: str) -> str:
     comparison = pd.crosstab(df[col1_actual], df[col2_actual])
     return comparison.to_string()
 
-def sanitize_filename(name: str) -> str:
-    """
-    Replace characters that are not alphanumeric or underscores with an underscore.
-    """
-    return re.sub(r'[^a-zA-Z0-9_]', '_', name)
-
-def plot_smoothed_line_chart(csv_path: str, column1: str, column2: str, save_plot: bool = False, output_dir: str = "plots", max_points: int = 100):
-    """
-    Generates a simplified line chart comparing two numeric metrics from a CSV file,
-    using a rolling average to smooth the data when there are many points.
-
-    The function:
-      - Reads and normalizes the CSV columns.
-      - Uses fuzzy matching (via find_column) to resolve column names.
-      - Checks that both columns are numeric.
-      - Drops missing values and sorts the data by the first metric.
-      - If the dataset has more points than max_points, computes a rolling average
-        with a window size computed from the total number of points divided by max_points.
-      - Plots the (smoothed) line chart with column1 on the x-axis and column2 on the y-axis.
-
-    If save_plot is True, the chart is saved to output_dir (created if needed)
-    and the file path is returned; otherwise, the chart is displayed.
-    """
-    df = pd.read_csv(csv_path)
-    # Normalize column names: lower-case and strip whitespace.
-    df.columns = df.columns.str.strip().str.lower()
-
-    # Resolve actual column names using your fuzzy matching helper.
-    col1 = find_column(df.columns, column1.strip().lower())
-    col2 = find_column(df.columns, column2.strip().lower())
-
-    if not col1 or not col2:
-        error_msg = f"Error: Could not find column(s) '{column1}' or '{column2}'. Available columns: {df.columns.tolist()}"
-        print(error_msg)
-        return error_msg
-
-    # Check that both columns are numeric.
-    if not pd.api.types.is_numeric_dtype(df[col1]) or not pd.api.types.is_numeric_dtype(df[col2]):
-        error_msg = "Error: Both columns must be numeric for a line chart comparison."
-        print(error_msg)
-        return error_msg
-
-    # Drop missing values and sort by the first column.
-    df = df[[col1, col2]].dropna().sort_values(by=col1)
-
-    # Determine rolling window size based on data density.
-    n_points = len(df)
-    if n_points > max_points:
-        window = max(1, int(n_points / max_points))
-        df_smoothed = df.copy()
-        df_smoothed[col1] = df_smoothed[col1].rolling(window=window, min_periods=1).mean()
-        df_smoothed[col2] = df_smoothed[col2].rolling(window=window, min_periods=1).mean()
-        x_data = df_smoothed[col1]
-        y_data = df_smoothed[col2]
-    else:
-        x_data = df[col1]
-        y_data = df[col2]
-
-    plt.figure(figsize=(8, 6))
-    plt.plot(x_data, y_data, marker='o', linestyle='-', color="blue")
-    plt.xlabel(col1)
-    plt.ylabel(col2)
-    plt.title(f"Smoothed Line Chart: {col1} vs {col2}")
-    plt.grid(True)
-    
-    if save_plot:
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        safe_name = sanitize_filename(f"{col1}_vs_{col2}")
-        file_path = os.path.join(output_dir, f"{safe_name}_smoothed_line_chart.png")
-        plt.savefig(file_path, bbox_inches="tight", dpi=300)
-        plt.close()
-        print(f"Plot saved to: {file_path}")
-        return file_path
-    else:
-        plt.show()
-        return "Plot displayed."
-
 async def stream_openai_response(response_iterator):
     """
     Simple streaming helper that yields OpenAI response chunks.
@@ -387,7 +319,7 @@ async def stream_openai_response(response_iterator):
         if delta.content:
             yield delta.content
 
-def generate_pie_chart_data(csv_path: str, column_of_interest: Optional[str] = None, session_id: Optional[str] = None) -> Optional[Dict]:
+def generate_pie_chart_data(csv_path: str, encoding: str = "utf-8", column_of_interest: Optional[str] = None, session_id: Optional[str] = None) -> Optional[Dict]:
     """
     Generates pie chart data from a CSV file for a given column if it is categorical.
     
@@ -407,7 +339,7 @@ def generate_pie_chart_data(csv_path: str, column_of_interest: Optional[str] = N
         chart_data_store.pop(session_id)
     
     # Read and clean the CSV file.
-    df = pd.read_csv(csv_path)
+    df = pd.read_csv(csv_path, encoding=encoding)
     df = clean_df_text(df)  # Use your cleaning function if needed.
 
     if column_of_interest:

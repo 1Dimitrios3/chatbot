@@ -17,9 +17,11 @@ def add_document(id, text):
         metadatas=[{"text": text}]
     )
 
-def chunk_text(text, chunk_size=200, overlap=20):
+def chunk_text(text, chunk_size=200, overlap=10):
     """Split text into overlapping chunks without breaking sentences,
-       and handle sentences that exceed the chunk size by splitting them further."""
+       and handle sentences that exceed the chunk size by splitting them further.
+       TIP: Chunk size is measured in words. Overlap is measured in sentences.
+       """
     sentences = sent_tokenize(text)
     chunks = []
     current_chunk = []
@@ -90,10 +92,12 @@ def process_pdf(pdf_path, chunk_size):
             num_pages = doc.page_count
             print(f"[DEBUG] Opened PDF with {num_pages} pages.")
             full_text = ""
+            pages_text = []
             for i, page in enumerate(doc):
                 page_text = page.get_text("text")
+                pages_text.append(page_text)
                 print(f"[DEBUG] Extracted text from page {i + 1}/{num_pages}.")
-                full_text += page_text + "\n"
+            full_text = "\n".join(pages_text)
     except Exception as e:
         error_message = f"[ERROR] Failed to open or read PDF {filename}: {e}"
         print(error_message)
@@ -102,7 +106,7 @@ def process_pdf(pdf_path, chunk_size):
     print("[DEBUG] Finished text extraction from PDF.")
 
     print("[DEBUG] Starting chunking process...")
-    chunks = chunk_text(full_text, chunk_size, int(chunk_size / 10))
+    chunks = chunk_text(full_text, chunk_size, int(chunk_size / 20))
     num_chunks = len(chunks)
     print(f"[DEBUG] Chunking complete: {num_chunks} chunks created.", flush=True)
 
@@ -134,7 +138,8 @@ def process_pdf(pdf_path, chunk_size):
         print("[DEBUG] Marked PDF as processed.", flush=True)
         return {"status": "processed", "message": f"PDF {filename} successfully processed!"}
     except Exception as e:
-        print(f"[ERROR] Error marking PDF as processed: {e}")
+        error_message = f"[ERROR] Error marking PDF as processed: {e}"
+        print(error_message)
         return {"status": "error", "message": error_message}
 
 

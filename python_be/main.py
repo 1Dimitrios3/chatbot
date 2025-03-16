@@ -212,10 +212,8 @@ async def train_process(file_type: str, chunk_size: int = 200):
     try:
         if file_type.lower() == "pdf":
             result = await asyncio.to_thread(process_all_pdfs, chunk_size)
-            print('result', result)
         elif file_type.lower() == "csv":
             result = await asyncio.to_thread(process_all_csvs, chunk_size)  
-            print('result', result)
         else:
             raise ValueError("Invalid file type provided. Allowed values are 'pdf' or 'csv'.")
         

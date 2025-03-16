@@ -145,6 +145,9 @@ async def ask_question_about_dataset(
             arguments = json.loads(arguments_json)
             if arguments.get("csv_path"):
                 arguments["csv_path"] = get_csv_path()
+
+            if arguments.get("encoding"):
+                arguments["encoding"] = detect_encoding(get_csv_path())
             
             # Based on the tool call, stream the follow-up answer.
             if function_name == "get_min_max_mean":
@@ -174,8 +177,9 @@ async def ask_question_about_dataset(
                 if should_show_piechart(query):
                     csv_path = arguments.get("csv_path")
                     column_of_interest = arguments.get("column_of_interest")
+                    encoding = arguments["encoding"]
                     
-                    chart_data = generate_pie_chart_data(csv_path, column_of_interest, session_id)
+                    chart_data = generate_pie_chart_data(csv_path, encoding, column_of_interest, session_id)
                     if chart_data:
                         print("Chart data generated:", chart_data)
                     else:
@@ -229,8 +233,12 @@ def process_csv(csv_path, chunk_size):
         message = f"✅ Skipping {filename}: Already processed."
         return {"status": "skipped", "message": message}
     else:
+        print("\n🔹 Detecting CSV encoding...")
+        encoding = detect_encoding(csv_path)
+        print(f"✅ Detected encoding: {encoding}")
+
         print("\n🔹 Cleaning Data...")
-        clean_df = prepare_clean_data(csv_path)
+        clean_df = prepare_clean_data(csv_path, encoding=encoding)
         print(f"✅ Cleaned DataFrame with {len(clean_df)} rows.")
     
         print("\n🔹 Chunking Data...")

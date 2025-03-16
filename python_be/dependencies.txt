@@ -13,3 +13,4 @@ python-multipart==0.0.20
 requests==2.32.3
 streamlit==1.42.1
 uvicorn==0.34.0
+chardet==5.2.0
