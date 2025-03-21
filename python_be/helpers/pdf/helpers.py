@@ -200,7 +200,7 @@ def clear_pdf_embeddings(pdf_path):
 # embed text with opensource alternative model (all-MiniLM-L6-v2) offers faster processing times
 # use different chroma storage path as now the dimensionality is different
 def embed_text(text):
-    """Generate embeddings for a text chunk using all-MiniLM-L6-v2 sentence tranformer (found in hugging face website)."""
+    """Generate embeddings for a text chunk using all-MiniLM-L6-v2 sentence transformer (found in hugging face website)."""
     model = get_sentence_model()
     embedding = model.encode(text)
     return embedding.tolist()
