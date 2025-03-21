@@ -1,14 +1,26 @@
 import os
 import shutil
+import threading
 import chromadb
 import openai
 import hashlib
 import datetime
 from dotenv import load_dotenv
+from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 STORAGE_PATH = os.getenv("CHROMA_STORAGE_PATH", "./chroma_storage")
+_model_lock = threading.Lock()
+_sentence_model = None
+
+def get_sentence_model():
+    global _sentence_model
+    if _sentence_model is None:
+        with _model_lock:
+            if _sentence_model is None:
+                _sentence_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+    return _sentence_model
 
 # Initialize ChromaDB
 # if there is a problem with chromaDB stale cache set reset to True
@@ -177,13 +189,21 @@ def clear_pdf_embeddings(pdf_path):
     except Exception as e:
         print(f"[ERROR] Failed to delete metadata for {pdf_path}: {e}")
 
+# def embed_text(text):
+#     """Generate embeddings for a text chunk using openai api."""
+#     response = openai.embeddings.create(
+#         input=text,
+#         model="text-embedding-ada-002" # text-embedding-3-small, text-embedding-3-large newest models
+#     )
+#     return response.data[0].embedding
+
+# embed text with opensource alternative model (all-MiniLM-L6-v2) offers faster processing times
+# use different chroma storage path as now the dimensionality is different
 def embed_text(text):
-    """Generate embeddings for a text chunk."""
-    response = openai.embeddings.create(
-        input=text,
-        model="text-embedding-ada-002" # text-embedding-3-small, text-embedding-3-large newest models
-    )
-    return response.data[0].embedding
+    """Generate embeddings for a text chunk using all-MiniLM-L6-v2 sentence tranformer (found in hugging face website)."""
+    model = get_sentence_model()
+    embedding = model.encode(text)
+    return embedding.tolist()
 
 def search_docs(query, top_k=10, min_score=0.7):
     """Retrieve relevant document chunks using embeddings."""
