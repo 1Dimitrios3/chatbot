@@ -30,7 +30,7 @@ To configure where embeddings are stored and to provide your OpenAI API key, set
 
 3. The project uses ChromaDB for managing pdf document embeddings and Faiss db for csv embeddings. Ensure that the CHROMA_STORAGE_PATH environment variable is set correctly to avoid stale storage issues.
 
-4. If you encounter an issue of change in dimensionality or an issue where the chatbot is not processing propely questions about PDF files, try updating the CHROMA_STORAGE_PATH environment variable first to a different path.
+4. If you encounter an issue of change in dimensionality or an issue where the chatbot is not processing properly questions about PDF files, try updating the CHROMA_STORAGE_PATH environment variable first to a different path.
 
 ## Backend Setup
 
