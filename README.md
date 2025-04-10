@@ -86,3 +86,5 @@ If you want a pie chart visualization for a categorical column, append -> 'show 
 
 Example: 
 - Analyze x column. Show piechart
+
+*TODO: Add permanent storage
