@@ -14,3 +14,4 @@ requests==2.32.3
 streamlit==1.42.1
 uvicorn==0.34.0
 chardet==5.2.0
+sentence_transformers==3.4.1
