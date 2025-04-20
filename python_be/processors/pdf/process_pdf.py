@@ -106,7 +106,7 @@ def process_pdf(pdf_path, chunk_size):
     print("[DEBUG] Finished text extraction from PDF.")
 
     print("[DEBUG] Starting chunking process...")
-    chunks = chunk_text(full_text, chunk_size, int(chunk_size / 20))
+    chunks = chunk_text(full_text, chunk_size, int(chunk_size / 50))
     num_chunks = len(chunks)
     print(f"[DEBUG] Chunking complete: {num_chunks} chunks created.", flush=True)
 

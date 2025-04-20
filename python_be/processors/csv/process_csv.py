@@ -242,7 +242,7 @@ def process_csv(csv_path, chunk_size):
         print(f"✅ Cleaned DataFrame with {len(clean_df)} rows.")
     
         print("\n🔹 Chunking Data...")
-        json_chunks = chunk_dataframe(clean_df, chunk_size, int(chunk_size / 10))
+        json_chunks = chunk_dataframe(clean_df, chunk_size, int(chunk_size / 50))
         print(f"✅ Created {len(json_chunks)} chunks.")
     
         print("\n🔹 Generating Embeddings and text records...")
