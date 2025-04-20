@@ -36,7 +36,7 @@ def detect_encoding(file_path, num_bytes=10000):
     detected = chardet.detect(raw_data)
     return detected.get('encoding', 'utf-8')  # Fallback to UTF-8 if not detected
 
-def chunk_dataframe(df: pd.DataFrame, chunk_size: int = 200, overlap: int = 20) -> list:
+def chunk_dataframe(df: pd.DataFrame, chunk_size: int = 200, overlap: int = 3) -> list:
     """
     Splits a cleaned DataFrame into smaller overlapping JSON chunks.
     

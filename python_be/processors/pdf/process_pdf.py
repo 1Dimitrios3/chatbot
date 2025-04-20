@@ -17,7 +17,7 @@ def add_document(id, text):
         metadatas=[{"text": text}]
     )
 
-def chunk_text(text, chunk_size=200, overlap=10):
+def chunk_text(text, chunk_size=200, overlap=3):
     """Split text into overlapping chunks without breaking sentences,
        and handle sentences that exceed the chunk size by splitting them further.
        TIP: Chunk size is measured in words. Overlap is measured in sentences.
@@ -106,7 +106,7 @@ def process_pdf(pdf_path, chunk_size):
     print("[DEBUG] Finished text extraction from PDF.")
 
     print("[DEBUG] Starting chunking process...")
-    chunks = chunk_text(full_text, chunk_size, int(chunk_size / 50))
+    chunks = chunk_text(full_text, chunk_size, max(1, int(chunk_size/100)))
     num_chunks = len(chunks)
     print(f"[DEBUG] Chunking complete: {num_chunks} chunks created.", flush=True)
 
